@@ -1,13 +1,16 @@
 import { createSeedData } from '../data/seed';
 import type {
+  ComentarioProyecto,
   Criterio,
   Curso,
   DemoStoreData,
   Evaluacion,
   Festival,
   Inscripcion,
+  Notificacion,
   Proyecto,
   Rol,
+  TagProfesor,
   Usuario,
 } from '../types/models';
 
@@ -60,11 +63,11 @@ function isQuotaError(err: unknown): boolean {
   );
 }
 
-function hydrateLegacyUsers(data: DemoStoreData): DemoStoreData {
-  const seedUsersById = new Map(
-    createSeedData().usuarios.map((u) => [u.id, u])
-  );
+function hydrateLegacyStore(data: DemoStoreData): DemoStoreData {
+  const seed = createSeedData();
+  const seedUsersById = new Map(seed.usuarios.map((u) => [u.id, u]));
   let changed = false;
+
   const usuarios = data.usuarios.map((u) => {
     const seedU = seedUsersById.get(u.id);
     if (!seedU) return u;
@@ -86,7 +89,20 @@ function hydrateLegacyUsers(data: DemoStoreData): DemoStoreData {
     }
     return u;
   });
-  return changed ? { ...data, usuarios } : data;
+
+  const comentarios = Array.isArray(data.comentarios)
+    ? data.comentarios
+    : ((changed = true), seed.comentarios);
+  const tagsProfesores = Array.isArray(data.tagsProfesores)
+    ? data.tagsProfesores
+    : ((changed = true), seed.tagsProfesores);
+  const notificaciones = Array.isArray(data.notificaciones)
+    ? data.notificaciones
+    : ((changed = true), seed.notificaciones);
+
+  return changed
+    ? { ...data, usuarios, comentarios, tagsProfesores, notificaciones }
+    : data;
 }
 
 function readStore(): DemoStoreData {
@@ -103,7 +119,7 @@ function readStore(): DemoStoreData {
       writeStore(seed, false);
       return seed;
     }
-    return hydrateLegacyUsers(parsed);
+    return hydrateLegacyStore(parsed);
   } catch {
     return createSeedData();
   }
@@ -214,6 +230,15 @@ export function deleteProfesor(profesorId: string): void {
   data.usuarios = data.usuarios.filter((u) => u.id !== profesorId);
   data.evaluaciones = data.evaluaciones.filter(
     (e) => e.profesorId !== profesorId
+  );
+  data.comentarios = data.comentarios.filter(
+    (c) => c.profesorId !== profesorId
+  );
+  data.tagsProfesores = data.tagsProfesores.filter(
+    (t) => t.profesorId !== profesorId
+  );
+  data.notificaciones = data.notificaciones.filter(
+    (n) => n.destinatarioId !== profesorId && n.autorId !== profesorId
   );
   if (data.usuarioActivoId === profesorId) {
     data.usuarioActivoId = data.usuarios[0]?.id;
@@ -392,6 +417,9 @@ export function deleteProyecto(id: string): void {
   data.proyectos = data.proyectos.filter((p) => p.id !== id);
   data.evaluaciones = data.evaluaciones.filter((e) => e.proyectoId !== id);
   data.inscripciones = data.inscripciones.filter((i) => i.proyectoId !== id);
+  data.comentarios = data.comentarios.filter((c) => c.proyectoId !== id);
+  data.tagsProfesores = data.tagsProfesores.filter((t) => t.proyectoId !== id);
+  data.notificaciones = data.notificaciones.filter((n) => n.proyectoId !== id);
   data.usuarios = data.usuarios.map((u) =>
     u.proyectosVistos
       ? { ...u, proyectosVistos: u.proyectosVistos.filter((pid) => pid !== id) }
@@ -655,4 +683,301 @@ export function deleteInscripcion(id: string): void {
   const data = readStore();
   data.inscripciones = data.inscripciones.filter((i) => i.id !== id);
   writeStore(data);
+}
+
+/* ============================================================================
+ * Comentarios de Proyectos, Tags a Profesores y Notificaciones
+ * ========================================================================== */
+
+export function getComentariosProyecto(
+  proyectoId: string,
+  viewer: Usuario
+): ComentarioProyecto[] {
+  const data = readStore();
+  return data.comentarios
+    .filter((c) => {
+      if (c.proyectoId !== proyectoId) return false;
+      // Regla de privacidad: un profesor NUNCA ve comentarios de otros profesores
+      if (viewer.rol === 'profesor') {
+        return c.profesorId === viewer.id;
+      }
+      return true;
+    })
+    .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
+}
+
+export function getComentariosDeMisProyectos(
+  alumnoId: string
+): ComentarioProyecto[] {
+  const data = readStore();
+  const misProyectosIds = new Set(
+    data.proyectos
+      .filter((p) => p.integrantes.includes(alumnoId))
+      .map((p) => p.id)
+  );
+  return data.comentarios
+    .filter((c) => misProyectosIds.has(c.proyectoId))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
+}
+
+export function addComentarioProyecto(params: {
+  proyectoId: string;
+  profesorId: string;
+  texto: string;
+}): ComentarioProyecto {
+  const data = readStore();
+  const fecha = todayISO();
+  const textoLimpio = params.texto.trim();
+
+  const nuevo: ComentarioProyecto = {
+    id: generateId('com'),
+    proyectoId: params.proyectoId,
+    profesorId: params.profesorId,
+    texto: textoLimpio,
+    fecha,
+    leido: false,
+    solucionado: false,
+  };
+  data.comentarios.unshift(nuevo);
+
+  // Registrar el proyecto como visto por este profesor
+  const profIdx = data.usuarios.findIndex((u) => u.id === params.profesorId);
+  if (profIdx >= 0) {
+    const vistos = new Set(data.usuarios[profIdx].proyectosVistos ?? []);
+    vistos.add(params.proyectoId);
+    data.usuarios[profIdx] = {
+      ...data.usuarios[profIdx],
+      proyectosVistos: Array.from(vistos),
+      ultimaConexion: fecha,
+    };
+  }
+
+  // Marcar cualquier tag pendiente a este profesor en este proyecto como atendido
+  data.tagsProfesores = data.tagsProfesores.map((t) =>
+    t.proyectoId === params.proyectoId && t.profesorId === params.profesorId
+      ? { ...t, atendido: true }
+      : t
+  );
+
+  // Generar notificación para cada alumno integrante del proyecto
+  const proyecto = data.proyectos.find((p) => p.id === params.proyectoId);
+  if (proyecto) {
+    const extracto =
+      textoLimpio.length > 140
+        ? `${textoLimpio.slice(0, 137)}...`
+        : textoLimpio;
+    for (const alumnoId of proyecto.integrantes) {
+      const notif: Notificacion = {
+        id: generateId('not'),
+        destinatarioId: alumnoId,
+        tipo: 'nuevo_comentario',
+        proyectoId: proyecto.id,
+        autorId: params.profesorId,
+        comentarioId: nuevo.id,
+        detalle: extracto,
+        fecha,
+      };
+      data.notificaciones.unshift(notif);
+    }
+  }
+
+  writeStore(data);
+  return nuevo;
+}
+
+export function deleteComentarioProyecto(comentarioId: string): void {
+  const data = readStore();
+  data.comentarios = data.comentarios.filter((c) => c.id !== comentarioId);
+  data.notificaciones = data.notificaciones.filter(
+    (n) => n.comentarioId !== comentarioId
+  );
+  writeStore(data);
+}
+
+export function toggleComentarioLeido(
+  comentarioId: string,
+  forceValue?: boolean
+): void {
+  const data = readStore();
+  const idx = data.comentarios.findIndex((c) => c.id === comentarioId);
+  if (idx < 0) return;
+  const nextVal =
+    typeof forceValue === 'boolean'
+      ? forceValue
+      : !data.comentarios[idx].leido;
+  data.comentarios[idx] = {
+    ...data.comentarios[idx],
+    leido: nextVal,
+  };
+  writeStore(data);
+}
+
+export function marcarTodosLeidosProyecto(proyectoId: string): void {
+  const data = readStore();
+  let changed = false;
+  data.comentarios = data.comentarios.map((c) => {
+    if (c.proyectoId === proyectoId && !c.leido) {
+      changed = true;
+      return { ...c, leido: true };
+    }
+    return c;
+  });
+  if (changed) {
+    writeStore(data);
+  }
+}
+
+export function toggleComentarioSolucionado(
+  comentarioId: string,
+  actorId: string
+): void {
+  const data = readStore();
+  const idx = data.comentarios.findIndex((c) => c.id === comentarioId);
+  if (idx < 0) return;
+
+  const actual = data.comentarios[idx];
+  const nextSolucionado = !actual.solucionado;
+  data.comentarios[idx] = {
+    ...actual,
+    solucionado: nextSolucionado,
+    leido: nextSolucionado ? true : actual.leido,
+  };
+
+  // Si un alumno marca como solucionado el comentario de un profesor, notificar al profesor
+  const actor = data.usuarios.find((u) => u.id === actorId);
+  if (nextSolucionado && actor?.rol === 'alumno') {
+    const extracto =
+      actual.texto.length > 90
+        ? `${actual.texto.slice(0, 87)}...`
+        : actual.texto;
+    data.notificaciones.unshift({
+      id: generateId('not'),
+      destinatarioId: actual.profesorId,
+      tipo: 'comentario_solucionado',
+      proyectoId: actual.proyectoId,
+      autorId: actorId,
+      comentarioId: actual.id,
+      detalle: extracto,
+      fecha: todayISO(),
+    });
+  }
+
+  writeStore(data);
+}
+
+export function getTagsProyecto(
+  proyectoId: string,
+  viewer: Usuario
+): TagProfesor[] {
+  const data = readStore();
+  return data.tagsProfesores
+    .filter((t) => {
+      if (t.proyectoId !== proyectoId) return false;
+      if (viewer.rol === 'profesor') {
+        return t.profesorId === viewer.id;
+      }
+      return true;
+    })
+    .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
+}
+
+export function getTagsDeMisProyectos(alumnoId: string): TagProfesor[] {
+  const data = readStore();
+  const misProyectosIds = new Set(
+    data.proyectos
+      .filter((p) => p.integrantes.includes(alumnoId))
+      .map((p) => p.id)
+  );
+  return data.tagsProfesores.filter((t) => misProyectosIds.has(t.proyectoId));
+}
+
+export function taggearProfesorEnProyecto(params: {
+  proyectoId: string;
+  alumnoId: string;
+  profesorId: string;
+  nota?: string;
+}): TagProfesor {
+  const data = readStore();
+  const fecha = todayISO();
+  const notaLimpia = params.nota?.trim() || undefined;
+
+  const existingIdx = data.tagsProfesores.findIndex(
+    (t) =>
+      t.proyectoId === params.proyectoId && t.profesorId === params.profesorId
+  );
+
+  let resultado: TagProfesor;
+  if (existingIdx >= 0) {
+    resultado = {
+      ...data.tagsProfesores[existingIdx],
+      alumnoId: params.alumnoId,
+      nota: notaLimpia,
+      fecha,
+      atendido: false,
+    };
+    data.tagsProfesores[existingIdx] = resultado;
+  } else {
+    resultado = {
+      id: generateId('tag'),
+      proyectoId: params.proyectoId,
+      alumnoId: params.alumnoId,
+      profesorId: params.profesorId,
+      nota: notaLimpia,
+      fecha,
+      atendido: false,
+    };
+    data.tagsProfesores.unshift(resultado);
+  }
+
+  data.notificaciones.unshift({
+    id: generateId('not'),
+    destinatarioId: params.profesorId,
+    tipo: 'tag_profesor',
+    proyectoId: params.proyectoId,
+    autorId: params.alumnoId,
+    detalle: notaLimpia,
+    fecha,
+  });
+
+  writeStore(data);
+  return resultado;
+}
+
+export function quitarTagProfesor(tagId: string): void {
+  const data = readStore();
+  data.tagsProfesores = data.tagsProfesores.filter((t) => t.id !== tagId);
+  writeStore(data);
+}
+
+export function getNotificacionesUsuario(usuarioId: string): Notificacion[] {
+  const data = readStore();
+  return data.notificaciones
+    .filter((n) => n.destinatarioId === usuarioId && !n.descartada)
+    .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
+}
+
+export function descartarNotificacion(notificacionId: string): void {
+  const data = readStore();
+  const idx = data.notificaciones.findIndex((n) => n.id === notificacionId);
+  if (idx < 0) return;
+  data.notificaciones[idx] = {
+    ...data.notificaciones[idx],
+    descartada: true,
+  };
+  writeStore(data);
+}
+
+export function limpiarNotificacionesUsuario(usuarioId: string): void {
+  const data = readStore();
+  let changed = false;
+  data.notificaciones = data.notificaciones.map((n) => {
+    if (n.destinatarioId === usuarioId && !n.descartada) {
+      changed = true;
+      return { ...n, descartada: true };
+    }
+    return n;
+  });
+  if (changed) {
+    writeStore(data);
+  }
 }

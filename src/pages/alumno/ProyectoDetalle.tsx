@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { InscribirModal } from '../../components/InscribirModal';
 import { Layout } from '../../components/Layout';
 import { Lightbox } from '../../components/Lightbox';
+import { ProyectoComentariosSection } from '../../components/ProyectoComentariosSection';
 import { useSession } from '../../context/SessionContext';
 import { formatFecha, resolveAssetUrl } from '../../lib/assets';
 import { getYouTubeEmbedUrl, triggerPdfDownload } from '../../lib/media';
@@ -194,8 +195,11 @@ export const ProyectoDetalle: React.FC = () => {
         </section>
       )}
 
+      {/* Sección de comentarios de profesores, filtro y taggeo */}
+      <ProyectoComentariosSection proyecto={proyecto} />
+
       {/* Tabla Inscripciones a festivales (sin estados ni puntajes) */}
-      <section className="card">
+      <section className="card" style={{ marginTop: 20 }}>
         <div
           style={{
             display: 'flex',

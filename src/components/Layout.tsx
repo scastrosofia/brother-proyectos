@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getHomeRouteForRol, useSession } from '../context/SessionContext';
-import { getCursoById, getUsuariosByRol } from '../lib/store';
+import {
+  getCursoById,
+  getNotificacionesUsuario,
+  getUsuariosByRol,
+} from '../lib/store';
 import type { Rol } from '../types/models';
 
 interface NavItem {
@@ -11,6 +15,7 @@ interface NavItem {
 
 const NAV_BY_ROL: Record<Rol, NavItem[]> = {
   alumno: [
+    { label: 'Dashboard', to: '/dashboard' },
     { label: 'Mis proyectos', to: '/mis-proyectos' },
     { label: 'Festivales', to: '/festivales' },
     { label: 'Mis inscripciones', to: '/mis-inscripciones' },
@@ -49,6 +54,10 @@ export const Layout: React.FC<{
 
   const usuariosDelRol = getUsuariosByRol(usuario.rol);
   const navItems = NAV_BY_ROL[usuario.rol];
+  const notificacionesCount =
+    usuario.rol === 'alumno' || usuario.rol === 'profesor'
+      ? getNotificacionesUsuario(usuario.id).length
+      : 0;
   const isAdminRoute =
     usuario.rol === 'admin' && location.pathname.startsWith('/admin');
 
@@ -109,6 +118,9 @@ export const Layout: React.FC<{
               }
             >
               {item.label}
+              {item.to === '/dashboard' && notificacionesCount > 0 && (
+                <span className="topbar__badge">{notificacionesCount}</span>
+              )}
             </NavLink>
           ))}
         </nav>

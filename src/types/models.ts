@@ -78,6 +78,43 @@ export interface Inscripcion {
   fecha: string;
 }
 
+export interface ComentarioProyecto {
+  id: string;
+  proyectoId: string;
+  profesorId: string;
+  texto: string;
+  fecha: string;
+  leido: boolean;
+  solucionado: boolean;
+}
+
+export interface TagProfesor {
+  id: string;
+  proyectoId: string;
+  alumnoId: string;
+  profesorId: string;
+  nota?: string;
+  fecha: string;
+  atendido: boolean;
+}
+
+export type NotificacionTipo =
+  | 'tag_profesor'
+  | 'nuevo_comentario'
+  | 'comentario_solucionado';
+
+export interface Notificacion {
+  id: string;
+  destinatarioId: string;
+  tipo: NotificacionTipo;
+  proyectoId: string;
+  autorId: string;
+  comentarioId?: string;
+  detalle?: string;
+  fecha: string;
+  descartada?: boolean;
+}
+
 export interface DemoStoreData {
   version: 1;
   usuarioActivoId?: string;
@@ -88,4 +125,7 @@ export interface DemoStoreData {
   evaluaciones: Evaluacion[];
   festivales: Festival[];
   inscripciones: Inscripcion[];
+  comentarios: ComentarioProyecto[];
+  tagsProfesores: TagProfesor[];
+  notificaciones: Notificacion[];
 }

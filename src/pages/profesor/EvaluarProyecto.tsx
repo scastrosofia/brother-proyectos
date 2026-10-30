@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { Lightbox } from '../../components/Lightbox';
+import { ProyectoComentariosSection } from '../../components/ProyectoComentariosSection';
 import { StarRating } from '../../components/StarRating';
 import { useSession } from '../../context/SessionContext';
 import { formatFecha, resolveAssetUrl } from '../../lib/assets';
@@ -476,6 +477,9 @@ export const EvaluarProyecto: React.FC = () => {
         </aside>
       </div>
 
+      {/* Sección de comentarios para alumnos (privada entre cada profesor y el equipo) */}
+      <ProyectoComentariosSection proyecto={proyecto} />
+
       {/* Debajo a todo el ancho: Evaluaciones de profesores (N) */}
       <section className="card" style={{ marginTop: 24 }}>
         <div
@@ -492,7 +496,9 @@ export const EvaluarProyecto: React.FC = () => {
             Evaluaciones de profesores ({evaluacionesProyecto.length})
           </h2>
           <span className="chip chip--blue">
-            Visibles para docentes y administración
+            {esProfesor
+              ? 'Puntajes docentes · Comentarios de otros profesores ocultos'
+              : 'Visibles para administración'}
           </span>
         </div>
 
@@ -508,6 +514,7 @@ export const EvaluarProyecto: React.FC = () => {
                 ? `${prof.nombre} ${prof.apellido}`
                 : 'Profesor';
               const esMia = esProfesor && ev.profesorId === usuario.id;
+              const puedeVerTextoEval = usuario.rol === 'admin' || esMia;
               const promEv = calcularPromedioEvaluacion(ev, criterios);
               const isExpanded = Boolean(expandedEvalIds[ev.id]);
 
@@ -564,7 +571,7 @@ export const EvaluarProyecto: React.FC = () => {
                     )}
                   </div>
 
-                  {ev.comentario && (
+                  {ev.comentario && puedeVerTextoEval && (
                     <p
                       style={{
                         marginTop: 8,

@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
+import { NotificacionesPanel } from '../../components/NotificacionesPanel';
+import { useSession } from '../../context/SessionContext';
 import { downloadCsv } from '../../lib/csv';
 import {
   getCursos,
@@ -9,6 +11,7 @@ import {
   getProyectos,
 } from '../../lib/store';
 import { CATEGORIAS } from '../../types/models';
+import { AlumnoDashboard } from '../alumno/AlumnoDashboard';
 
 function formatPercentage(part: number, total: number): string {
   if (total <= 0 || part <= 0) return '0%';
@@ -18,6 +21,7 @@ function formatPercentage(part: number, total: number): string {
 }
 
 export const Dashboard: React.FC = () => {
+  const { usuario } = useSession();
   const [festivalFiltroId, setFestivalFiltroId] = useState<string>('');
 
   const proyectos = getProyectos();
@@ -226,13 +230,23 @@ export const Dashboard: React.FC = () => {
     downloadCsv('brother-dashboard-inscripciones.csv', headers, rows);
   };
 
+  if (usuario.rol === 'alumno') {
+    return <AlumnoDashboard />;
+  }
+
   return (
     <Layout>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Dashboard de inscripciones</h1>
+          <h1 className="page-title">
+            {usuario.rol === 'profesor'
+              ? 'Dashboard de profesor'
+              : 'Dashboard de inscripciones'}
+          </h1>
           <p className="page-subtitle">
-            Resumen de proyectos inscriptos por turno/curso, categoría y festival.
+            {usuario.rol === 'profesor'
+              ? 'Notificaciones de proyectos donde te taggearon alumnos y resumen general de inscripciones.'
+              : 'Resumen de proyectos inscriptos por turno/curso, categoría y festival.'}
           </p>
         </div>
 
@@ -268,6 +282,11 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Notificaciones de menciones/tags para el profesor */}
+      {usuario.rol === 'profesor' && (
+        <NotificacionesPanel emptyMessage="No tenés menciones ni notificaciones pendientes de alumnos." />
+      )}
 
       {/* KPIs principales */}
       <div className="kpi-grid">

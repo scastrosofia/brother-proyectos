@@ -6,6 +6,7 @@ import { useSession } from '../../context/SessionContext';
 import { formatFecha, resolveAssetUrl } from '../../lib/assets';
 import {
   deleteProyecto,
+  getComentariosProyecto,
   getCursoById,
   getInscripciones,
   getProyectosByAlumno,
@@ -100,6 +101,8 @@ export const MisProyectos: React.FC = () => {
               (acc, item) => acc + item.categoriaIds.length,
               0
             );
+            const comentariosProj = getComentariosProyecto(proj.id, usuario);
+            const sinLeerProj = comentariosProj.filter((c) => !c.leido).length;
 
             return (
               <article key={proj.id} className="card project-row-card">
@@ -129,6 +132,19 @@ export const MisProyectos: React.FC = () => {
                   <div className="chip-row" style={{ marginTop: 8 }}>
                     <span className="chip">{proj.categoria}</span>
                     {curso && <span className="chip">{curso.nombre}</span>}
+                    {comentariosProj.length > 0 && (
+                      <span
+                        className={`chip ${
+                          sinLeerProj > 0 ? 'chip--unread' : 'chip--read'
+                        }`}
+                      >
+                        {comentariosProj.length}{' '}
+                        {comentariosProj.length === 1
+                          ? 'comentario'
+                          : 'comentarios'}
+                        {sinLeerProj > 0 ? ` · ${sinLeerProj} sin leer` : ''}
+                      </span>
+                    )}
                   </div>
 
                   <p
