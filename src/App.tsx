@@ -10,6 +10,7 @@ import { AdminCursos } from './pages/admin/AdminCursos';
 import { AdminFestivales } from './pages/admin/AdminFestivales';
 import { AdminFestivalForm } from './pages/admin/AdminFestivalForm';
 import { AdminInscripciones } from './pages/admin/AdminInscripciones';
+import { AdminProfesores } from './pages/admin/AdminProfesores';
 import { MisInscripciones } from './pages/alumno/MisInscripciones';
 import { MisProyectos } from './pages/alumno/MisProyectos';
 import { ProyectoDetalle } from './pages/alumno/ProyectoDetalle';
@@ -18,6 +19,7 @@ import { FestivalDetalle } from './pages/festivales/FestivalDetalle';
 import { FestivalesList } from './pages/festivales/FestivalesList';
 import { EvaluarProyecto } from './pages/profesor/EvaluarProyecto';
 import { ProyectosRanking } from './pages/profesor/ProyectosRanking';
+import { Dashboard } from './pages/shared/Dashboard';
 
 const RoleHomeRedirect: React.FC = () => {
   const { usuario } = useSession();
@@ -38,6 +40,10 @@ export const App: React.FC = () => {
           <Route path="/proyecto/:id" element={<ProyectoDetalle />} />
           <Route path="/mis-inscripciones" element={<MisInscripciones />} />
 
+          {/* Dashboard compartido (Profesor y Admin) */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+
           {/* B · Profesor (y Admin en modo lectura) */}
           <Route path="/proyectos" element={<ProyectosRanking />} />
           <Route path="/evaluar/:id" element={<EvaluarProyecto />} />
@@ -53,6 +59,7 @@ export const App: React.FC = () => {
             element={<AdminFestivalForm />}
           />
           <Route path="/admin/festivales/:id" element={<AdminFestivalForm />} />
+          <Route path="/admin/profesores" element={<AdminProfesores />} />
           <Route path="/admin/cursos" element={<AdminCursos />} />
           <Route path="/admin/criterios" element={<AdminCriterios />} />
           <Route path="/admin/inscripciones" element={<AdminInscripciones />} />

@@ -1142,3 +1142,115 @@ p {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================================
+ * Dashboard (Admin y Profesores) — estilo reportes FilmFreeway
+ * ========================================================================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+
+.kpi-card__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.kpi-card__value {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-top: 6px;
+  color: var(--text-main);
+}
+
+.kpi-card__sub {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-top: 4px;
+}
+
+.report-section {
+  margin-bottom: 28px;
+}
+
+.report-section__title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+  color: var(--text-main);
+}
+
+.ff-report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ff-report-table th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #52524e;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border-color);
+  background: #fcfcfa;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ff-report-table td {
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 15px;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.ff-report-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ff-report-table tbody tr:hover {
+  background-color: #fafaf8;
+}
+
+.ff-report-table .col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ff-report-table .col-pct {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  width: 160px;
+}
+
+.dashboard-two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .dashboard-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+

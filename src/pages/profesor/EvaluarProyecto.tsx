@@ -21,6 +21,7 @@ import {
   getEvaluacionProfesor,
   getProyectoById,
   getUsuarioById,
+  registrarVistaProyecto,
   saveEvaluacion,
 } from '../../lib/store';
 
@@ -46,6 +47,12 @@ export const EvaluarProyecto: React.FC = () => {
   const [expandedEvalIds, setExpandedEvalIds] = useState<Record<string, boolean>>({});
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (proyecto && esProfesor) {
+      registrarVistaProyecto(proyecto.id, usuario.id);
+    }
+  }, [proyecto?.id, usuario.id, esProfesor]);
 
   useEffect(() => {
     if (evaluacionPropia) {

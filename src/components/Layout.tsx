@@ -16,11 +16,14 @@ const NAV_BY_ROL: Record<Rol, NavItem[]> = {
     { label: 'Mis inscripciones', to: '/mis-inscripciones' },
   ],
   profesor: [
+    { label: 'Dashboard', to: '/dashboard' },
     { label: 'Proyectos', to: '/proyectos' },
     { label: 'Festivales', to: '/festivales' },
   ],
   admin: [
+    { label: 'Dashboard', to: '/admin/dashboard' },
     { label: 'Festivales', to: '/admin/festivales' },
+    { label: 'Profesores', to: '/admin/profesores' },
     { label: 'Proyectos', to: '/proyectos' },
     { label: 'Cursos', to: '/admin/cursos' },
     { label: 'Criterios', to: '/admin/criterios' },
@@ -171,12 +174,28 @@ export const Layout: React.FC<{
           <aside className="admin-sidebar" aria-label="Menú de administración">
             <div className="admin-sidebar__title">BROTHER · Admin</div>
             <NavLink
+              to="/admin/dashboard"
+              className={({ isActive }) =>
+                `admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`
+              }
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
               to="/admin/festivales"
               className={({ isActive }) =>
                 `admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`
               }
             >
               Festivales
+            </NavLink>
+            <NavLink
+              to="/admin/profesores"
+              className={({ isActive }) =>
+                `admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`
+              }
+            >
+              Profesores
             </NavLink>
             <NavLink
               to="/proyectos"

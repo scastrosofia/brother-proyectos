@@ -60,6 +60,35 @@ function isQuotaError(err: unknown): boolean {
   );
 }
 
+function hydrateLegacyUsers(data: DemoStoreData): DemoStoreData {
+  const seedUsersById = new Map(
+    createSeedData().usuarios.map((u) => [u.id, u])
+  );
+  let changed = false;
+  const usuarios = data.usuarios.map((u) => {
+    const seedU = seedUsersById.get(u.id);
+    if (!seedU) return u;
+    const nextEmail = u.email ?? seedU.email;
+    const nextUltima = u.ultimaConexion ?? seedU.ultimaConexion;
+    const nextVistos = u.proyectosVistos ?? seedU.proyectosVistos;
+    if (
+      nextEmail !== u.email ||
+      nextUltima !== u.ultimaConexion ||
+      nextVistos !== u.proyectosVistos
+    ) {
+      changed = true;
+      return {
+        ...u,
+        email: nextEmail,
+        ultimaConexion: nextUltima,
+        proyectosVistos: nextVistos,
+      };
+    }
+    return u;
+  });
+  return changed ? { ...data, usuarios } : data;
+}
+
 function readStore(): DemoStoreData {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -74,7 +103,7 @@ function readStore(): DemoStoreData {
       writeStore(seed, false);
       return seed;
     }
-    return parsed;
+    return hydrateLegacyUsers(parsed);
   } catch {
     return createSeedData();
   }
@@ -117,7 +146,7 @@ export function resetDemoData(): DemoStoreData {
 }
 
 /* ============================================================================
- * Usuarios
+ * Usuarios y Profesores
  * ========================================================================== */
 
 export function getUsuarios(): Usuario[] {
@@ -143,10 +172,77 @@ export function getUsuarioActivo(): Usuario {
 
 export function setUsuarioActivo(usuarioId: string): Usuario {
   const data = readStore();
-  const found = data.usuarios.find((u) => u.id === usuarioId) ?? data.usuarios[0];
-  data.usuarioActivoId = found.id;
+  const idx = data.usuarios.findIndex((u) => u.id === usuarioId);
+  const targetIdx = idx >= 0 ? idx : 0;
+  const updatedUser: Usuario = {
+    ...data.usuarios[targetIdx],
+    ultimaConexion: todayISO(),
+  };
+  data.usuarios[targetIdx] = updatedUser;
+  data.usuarioActivoId = updatedUser.id;
   writeStore(data);
-  return found;
+  return updatedUser;
+}
+
+export function addProfesor(input: {
+  nombre: string;
+  apellido: string;
+  email: string;
+}): Usuario {
+  const data = readStore();
+  const nuevo: Usuario = {
+    id: generateId('prof'),
+    nombre: input.nombre.trim(),
+    apellido: input.apellido.trim(),
+    email: input.email.trim().toLowerCase(),
+    rol: 'profesor',
+    proyectosVistos: [],
+  };
+  data.usuarios.push(nuevo);
+  writeStore(data);
+  return nuevo;
+}
+
+export function deleteProfesor(profesorId: string): void {
+  const data = readStore();
+  const profesRestantes = data.usuarios.filter(
+    (u) => u.rol === 'profesor' && u.id !== profesorId
+  );
+  // Mantener al menos 1 profesor en la demo para no vaciar el rol
+  if (profesRestantes.length === 0) return;
+
+  data.usuarios = data.usuarios.filter((u) => u.id !== profesorId);
+  data.evaluaciones = data.evaluaciones.filter(
+    (e) => e.profesorId !== profesorId
+  );
+  if (data.usuarioActivoId === profesorId) {
+    data.usuarioActivoId = data.usuarios[0]?.id;
+  }
+  writeStore(data);
+}
+
+export function registrarVistaProyecto(
+  proyectoId: string,
+  profesorId: string
+): void {
+  const data = readStore();
+  const idx = data.usuarios.findIndex(
+    (u) => u.id === profesorId && u.rol === 'profesor'
+  );
+  if (idx < 0) return;
+  const user = data.usuarios[idx];
+  const vistos = new Set(user.proyectosVistos ?? []);
+  const hoy = todayISO();
+  if (vistos.has(proyectoId) && user.ultimaConexion === hoy) {
+    return;
+  }
+  vistos.add(proyectoId);
+  data.usuarios[idx] = {
+    ...user,
+    proyectosVistos: Array.from(vistos),
+    ultimaConexion: hoy,
+  };
+  writeStore(data);
 }
 
 /* ============================================================================
@@ -296,6 +392,11 @@ export function deleteProyecto(id: string): void {
   data.proyectos = data.proyectos.filter((p) => p.id !== id);
   data.evaluaciones = data.evaluaciones.filter((e) => e.proyectoId !== id);
   data.inscripciones = data.inscripciones.filter((i) => i.proyectoId !== id);
+  data.usuarios = data.usuarios.map((u) =>
+    u.proyectosVistos
+      ? { ...u, proyectosVistos: u.proyectosVistos.filter((pid) => pid !== id) }
+      : u
+  );
   writeStore(data);
 }
 
@@ -374,6 +475,18 @@ export function saveEvaluacion(input: {
 }): Evaluacion {
   const data = readStore();
   const fecha = todayISO();
+
+  const profIdx = data.usuarios.findIndex((u) => u.id === input.profesorId);
+  if (profIdx >= 0) {
+    const vistos = new Set(data.usuarios[profIdx].proyectosVistos ?? []);
+    vistos.add(input.proyectoId);
+    data.usuarios[profIdx] = {
+      ...data.usuarios[profIdx],
+      proyectosVistos: Array.from(vistos),
+      ultimaConexion: fecha,
+    };
+  }
+
   const existingIdx = data.evaluaciones.findIndex(
     (e) => e.proyectoId === input.proyectoId && e.profesorId === input.profesorId
   );

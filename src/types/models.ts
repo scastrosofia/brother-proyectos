@@ -7,8 +7,11 @@ export interface Usuario {
   id: string;
   nombre: string;
   apellido: string;
+  email?: string;
   rol: Rol;
   cursoId?: string;
+  ultimaConexion?: string;
+  proyectosVistos?: string[];
 }
 
 export interface Curso {
