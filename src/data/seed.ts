@@ -1,0 +1,530 @@
+import type { DemoStoreData } from '../types/models';
+
+function offsetDaysISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+export function createSeedData(): DemoStoreData {
+  return {
+    version: 1,
+    cursos: [
+      { id: 'curso-1', nombre: 'Creatividad Anual – Mañana' },
+      { id: 'curso-2', nombre: 'Creatividad Anual – Noche' },
+      { id: 'curso-3', nombre: 'Redacción Intensivo' },
+    ],
+    usuarios: [
+      {
+        id: 'alu-1',
+        nombre: 'Valentina',
+        apellido: 'Gómez',
+        rol: 'alumno',
+        cursoId: 'curso-1',
+      },
+      {
+        id: 'alu-2',
+        nombre: 'Mateo',
+        apellido: 'Pereyra',
+        rol: 'alumno',
+        cursoId: 'curso-1',
+      },
+      {
+        id: 'alu-3',
+        nombre: 'Camila',
+        apellido: 'Sosa',
+        rol: 'alumno',
+        cursoId: 'curso-2',
+      },
+      {
+        id: 'alu-4',
+        nombre: 'Julián',
+        apellido: 'Ferreyra',
+        rol: 'alumno',
+        cursoId: 'curso-3',
+      },
+      {
+        id: 'prof-1',
+        nombre: 'Martín',
+        apellido: 'Echeverría',
+        rol: 'profesor',
+      },
+      {
+        id: 'prof-2',
+        nombre: 'Lucía',
+        apellido: 'Benítez',
+        rol: 'profesor',
+      },
+      {
+        id: 'prof-3',
+        nombre: 'Federico',
+        apellido: 'Quiroga',
+        rol: 'profesor',
+      },
+      {
+        id: 'adm-1',
+        nombre: 'Sofía',
+        apellido: 'Méndez',
+        rol: 'admin',
+      },
+    ],
+    criterios: [
+      { id: 'crit-1', nombre: 'Idea / Originalidad', orden: 1 },
+      { id: 'crit-2', nombre: 'Insight', orden: 2 },
+      { id: 'crit-3', nombre: 'Pertinencia al brief', orden: 3 },
+      { id: 'crit-4', nombre: 'Ejecución / Craft', orden: 4 },
+      { id: 'crit-5', nombre: 'Redacción / Copy', orden: 5 },
+      { id: 'crit-6', nombre: 'Potencial de premio', orden: 6 },
+    ],
+    proyectos: [
+      {
+        id: 'proj-01',
+        nombre: 'El último bondi a las tres',
+        categoria: 'Film',
+        boardImg: 'seed/board-01.svg',
+        youtubeUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+        imagenes: ['seed/extra-01.svg', 'seed/extra-03.svg'],
+        pdf: { nombre: 'Caso-Ultimo-Bondi.pdf', data: 'seed/ejemplo.pdf' },
+        cursoId: 'curso-1',
+        integrantes: ['alu-1', 'alu-2'],
+        descripcion:
+          'Insight: volver de noche en el AMBA es un deporte de estrategia colectiva. Creamos un corto documental ficcionado para una app de movilidad donde cada parada nocturna desbloquea beneficios compartidos entre quienes esperan el mismo interno.',
+        creadoEn: offsetDaysISO(-26),
+        actualizadoEn: offsetDaysISO(-5),
+      },
+      {
+        id: 'proj-02',
+        nombre: 'Tickets que devuelven tiempo',
+        categoria: 'Activación',
+        boardImg: 'seed/board-02.svg',
+        imagenes: ['seed/extra-03.svg', 'seed/extra-02.svg'],
+        pdf: { nombre: 'Board-Tickets-Tiempo.pdf', data: 'seed/ejemplo.pdf' },
+        cursoId: 'curso-1',
+        integrantes: ['alu-1', 'alu-3'],
+        descripcion:
+          'Transformamos los tickets interminables de supermercado en pases culturales de 15 minutos: el tiempo exacto que perdiste haciendo fila se convierte en lecturas cortas y entradas express a salas independientes del barrio.',
+        creadoEn: offsetDaysISO(-22),
+        actualizadoEn: offsetDaysISO(-4),
+      },
+      {
+        id: 'proj-03',
+        nombre: 'Manual de excusas porteñas',
+        categoria: 'Gráfica',
+        boardImg: 'seed/board-03.svg',
+        imagenes: ['seed/extra-04.svg', 'seed/extra-01.svg'],
+        pdf: { nombre: 'Serie-Grafica-Excusas.pdf', data: 'seed/ejemplo.pdf' },
+        cursoId: 'curso-3',
+        integrantes: ['alu-4'],
+        descripcion:
+          'Campaña gráfica de vía pública para una marca de café al paso basada en las mentiras piadosas que decimos cuando llegamos diez minutos tarde. Tres piezas puramente tipográficas pensadas para estaciones de subte.',
+        creadoEn: offsetDaysISO(-20),
+        actualizadoEn: offsetDaysISO(-8),
+      },
+      {
+        id: 'proj-04',
+        nombre: 'Modo Siesta Obligatoria',
+        categoria: 'Digital',
+        boardImg: 'seed/board-04.svg',
+        youtubeUrl: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+        imagenes: ['seed/extra-02.svg'],
+        cursoId: 'curso-2',
+        integrantes: ['alu-3', 'alu-4'],
+        descripcion:
+          'Extensión para navegadores y Slack impulsada por una marca de colchones que detecta cuando escribís tres errores de tipeo seguidos después del almuerzo y bloquea tus reuniones por veinte minutos.',
+        creadoEn: offsetDaysISO(-18),
+        actualizadoEn: offsetDaysISO(-3),
+      },
+      {
+        id: 'proj-05',
+        nombre: 'La heladera que avisa antes',
+        categoria: 'Activación',
+        boardImg: 'seed/board-05.svg',
+        imagenes: ['seed/extra-01.svg', 'seed/extra-03.svg'],
+        pdf: { nombre: 'Presentacion-Heladera.pdf', data: 'seed/ejemplo.pdf' },
+        cursoId: 'curso-2',
+        integrantes: ['alu-3'],
+        descripcion:
+          'Imanes termocrómicos entregados junto a compras barriales que cambian de color tres días antes del vencimiento de los frescos y sugieren recetas con códigos QR para reducir el desperdicio hogareño.',
+        creadoEn: offsetDaysISO(-16),
+        actualizadoEn: offsetDaysISO(-6),
+      },
+      {
+        id: 'proj-06',
+        nombre: 'Subtítulos de sobremesa',
+        categoria: 'Film',
+        boardImg: 'seed/board-06.svg',
+        youtubeUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+        imagenes: [],
+        cursoId: 'curso-1',
+        integrantes: ['alu-2'],
+        descripcion:
+          'Pieza audiovisual de 90 segundos sobre la brecha auditiva en los almuerzos familiares del domingo. Lo que los abuelos fingen escuchar cuando hablan todos al mismo tiempo, contado desde su punto de vista.',
+        creadoEn: offsetDaysISO(-14),
+        actualizadoEn: offsetDaysISO(-7),
+      },
+      {
+        id: 'proj-07',
+        nombre: 'Pósters que se leen doblados',
+        categoria: 'Gráfica',
+        boardImg: 'seed/board-07.svg',
+        imagenes: ['seed/extra-04.svg'],
+        pdf: { nombre: 'Posters-Doblados.pdf', data: 'seed/ejemplo.pdf' },
+        cursoId: 'curso-3',
+        integrantes: ['alu-1', 'alu-4'],
+        descripcion:
+          'Afiches editoriales para librerías de usados diseñados para funcionar tanto desplegados en vidriera como doblados en cuatro adentro del bolsillo de una campera.',
+        creadoEn: offsetDaysISO(-12),
+        actualizadoEn: offsetDaysISO(-2),
+      },
+      {
+        id: 'proj-08',
+        nombre: 'Playlist de espera bancaria',
+        categoria: 'Digital',
+        boardImg: 'seed/board-08.svg',
+        imagenes: ['seed/extra-02.svg'],
+        cursoId: 'curso-2',
+        integrantes: ['alu-2', 'alu-3'],
+        descripcion:
+          'Convertimos la música de espera telefónica de atención al cliente en sesiones en vivo de bandas emergentes: si te dejan esperando en línea, al menos descubrís a tu próxima banda favorita y podés guardarla.',
+        creadoEn: offsetDaysISO(-9),
+        actualizadoEn: offsetDaysISO(-2),
+      },
+      {
+        id: 'proj-09',
+        nombre: 'Asado sin spoilers',
+        categoria: 'Film',
+        boardImg: 'seed/board-09.svg',
+        imagenes: ['seed/extra-03.svg'],
+        cursoId: 'curso-3',
+        integrantes: ['alu-4'],
+        descripcion:
+          'Serie de tres spots cortos para una plataforma de streaming donde el parrillero tiene el derecho constitucional de vetar cualquier tema de series hasta que salga el vacío.',
+        creadoEn: offsetDaysISO(-4),
+        actualizadoEn: offsetDaysISO(-1),
+      },
+      {
+        id: 'proj-10',
+        nombre: 'Veredas con memoria',
+        categoria: 'Activación',
+        boardImg: 'seed/board-10.svg',
+        imagenes: ['seed/extra-01.svg'],
+        pdf: { nombre: 'Caso-Veredas.pdf', data: 'seed/ejemplo.pdf' },
+        cursoId: 'curso-1',
+        integrantes: ['alu-2'],
+        descripcion:
+          'Baldosas intervenidas frente a clubes de barrio históricos que al mojarse los días de lluvia revelan jugadas y anécdotas narradas por vecinos de más de ochenta años.',
+        creadoEn: offsetDaysISO(-2),
+        actualizadoEn: offsetDaysISO(-1),
+      },
+    ],
+    evaluaciones: [
+      {
+        id: 'eval-01',
+        proyectoId: 'proj-01',
+        profesorId: 'prof-1',
+        puntajes: { 'crit-1': 9, 'crit-2': 10, 'crit-3': 9, 'crit-4': 9, 'crit-5': 9, 'crit-6': 9 },
+        comentario: 'Gran hallazgo cotidiano. El insight es súper reconocible y el tono evita golpes bajos. Ajustaría apenas el cierre del videocaso para que entre en 90 segundos clavados.',
+        fecha: offsetDaysISO(-4),
+      },
+      {
+        id: 'eval-02',
+        proyectoId: 'proj-01',
+        profesorId: 'prof-2',
+        puntajes: { 'crit-1': 9, 'crit-2': 9, 'crit-3': 9, 'crit-4': 8, 'crit-5': 9, 'crit-6': 9 },
+        comentario: 'Muy sólida la bajada a producto real. Tiene pasta clara para OBRAR y El Diente.',
+        fecha: offsetDaysISO(-3),
+      },
+      {
+        id: 'eval-03',
+        proyectoId: 'proj-01',
+        profesorId: 'prof-3',
+        puntajes: { 'crit-1': 9, 'crit-2': 9, 'crit-3': 8, 'crit-4': 9, 'crit-5': 8, 'crit-6': 9 },
+        comentario: 'El board se entiende en cinco segundos, que es clave para jurado. Muy buen laburo en dupla.',
+        fecha: offsetDaysISO(-2),
+      },
+      {
+        id: 'eval-04',
+        proyectoId: 'proj-03',
+        profesorId: 'prof-1',
+        puntajes: { 'crit-1': 8, 'crit-2': 9, 'crit-3': 9, 'crit-4': 8, 'crit-5': 10, 'crit-6': 8 },
+        comentario: 'Los titulares están afiladísimos. La tercera pieza es la más fuerte; lleven las otras dos a esa misma síntesis.',
+        fecha: offsetDaysISO(-6),
+      },
+      {
+        id: 'eval-05',
+        proyectoId: 'proj-03',
+        profesorId: 'prof-3',
+        puntajes: { 'crit-1': 8, 'crit-2': 9, 'crit-3': 8, 'crit-4': 8, 'crit-5': 9, 'crit-6': 8 },
+        comentario: 'Excelente ejercicio de redacción pura. Cuiden la legibilidad a distancia en el mockup de subte.',
+        fecha: offsetDaysISO(-5),
+      },
+      {
+        id: 'eval-06',
+        proyectoId: 'proj-04',
+        profesorId: 'prof-2',
+        puntajes: { 'crit-1': 9, 'crit-2': 8, 'crit-3': 8, 'crit-4': 8, 'crit-5': 8, 'crit-6': 9 },
+        comentario: 'Divertida, simple y 100% ejecutable. Mostraría mejor cómo convive el bloqueo con el calendario laboral.',
+        fecha: offsetDaysISO(-3),
+      },
+      {
+        id: 'eval-07',
+        proyectoId: 'proj-04',
+        profesorId: 'prof-1',
+        puntajes: { 'crit-1': 8, 'crit-2': 8, 'crit-3': 8, 'crit-4': 7, 'crit-5': 8, 'crit-6': 8 },
+        comentario: 'Buena idea digital con disparador concreto (los errores de tipeo). Sumaría un par de pantallas más al board.',
+        fecha: offsetDaysISO(-2),
+      },
+      {
+        id: 'eval-08',
+        proyectoId: 'proj-02',
+        profesorId: 'prof-2',
+        puntajes: { 'crit-1': 8, 'crit-2': 8, 'crit-3': 8, 'crit-4': 7, 'crit-5': 8, 'crit-6': 8 },
+        comentario: 'Linda vuelta poética sobre un objeto descartable. Falta redondear la mecánica de canje en boletería.',
+        fecha: offsetDaysISO(-4),
+      },
+      {
+        id: 'eval-09',
+        proyectoId: 'proj-06',
+        profesorId: 'prof-1',
+        puntajes: { 'crit-1': 7, 'crit-2': 9, 'crit-3': 8, 'crit-4': 7, 'crit-5': 7, 'crit-6': 7 },
+        comentario: 'El insight emociona enseguida. Trabajaría más el guion para que el giro de marca no se sienta predecible.',
+        fecha: offsetDaysISO(-5),
+      },
+      {
+        id: 'eval-10',
+        proyectoId: 'proj-06',
+        profesorId: 'prof-3',
+        puntajes: { 'crit-1': 7, 'crit-2': 8, 'crit-3': 7, 'crit-4': 7, 'crit-5': 8, 'crit-6': 7 },
+        comentario: 'Muy buen punto de vista sonoro. Puliría el cierre de copy.',
+        fecha: offsetDaysISO(-3),
+      },
+      {
+        id: 'eval-11',
+        proyectoId: 'proj-05',
+        profesorId: 'prof-2',
+        puntajes: { 'crit-1': 7, 'crit-2': 7, 'crit-3': 8, 'crit-4': 6, 'crit-5': 7, 'crit-6': 7 },
+        comentario: 'Resuelve un problema real, aunque conviene reforzar la diferencial creativa frente a apps de vencimiento.',
+        fecha: offsetDaysISO(-4),
+      },
+      {
+        id: 'eval-12',
+        proyectoId: 'proj-07',
+        profesorId: 'prof-3',
+        puntajes: { 'crit-1': 7, 'crit-2': 6, 'crit-3': 7, 'crit-4': 8, 'crit-5': 7, 'crit-6': 6 },
+        comentario: 'Lindo hallazgo de diseño editorial. Todavía le falta una vuelta de concepto para ganar potencia en festival.',
+        fecha: offsetDaysISO(-1),
+      },
+      {
+        id: 'eval-13',
+        proyectoId: 'proj-08',
+        profesorId: 'prof-1',
+        puntajes: { 'crit-1': 6, 'crit-2': 7, 'crit-3': 6, 'crit-4': 6, 'crit-5': 6, 'crit-6': 6 },
+        comentario: 'El punto de partida rinde, pero hoy se siente parecido a casos previos. Busquen un ángulo propio desde las bandas.',
+        fecha: offsetDaysISO(-1),
+      },
+    ],
+    festivales: [
+      {
+        id: 'fest-1',
+        nombre: 'OBRAR Estudiantes',
+        web: 'https://www.premioobrar.org',
+        deadline: offsetDaysISO(14),
+        logo: 'seed/fest-obrar.svg',
+        estado: 'abierto',
+        bajada:
+          'Premio del Consejo Publicitario Argentino a campañas estudiantiles de bien público e impacto social positivo.',
+        brief:
+          'Texto de ejemplo para la demo: Buscamos ideas creativas desarrolladas por estudiantes que aborden problemáticas sociales, ambientales o de convivencia ciudadana con foco local. La campaña debe proponer un mensaje claro, empático y accionable para audiencias jóvenes o intergeneracionales.',
+        reglas:
+          'Texto de ejemplo para la demo: Pueden inscribirse equipos de hasta 3 alumnos regulares de Brother. Cada proyecto debe contar obligatoriamente con board vertical de síntesis y descripción de hasta 600 caracteres. El videocaso no debe superar los 120 segundos.',
+        categorias: [
+          {
+            id: 'f1-cat-1',
+            nombre: 'Bien Público · Film y Audiovisual',
+            descripcion: 'Board de presentación + link a spot o videocaso (máx. 2 min)',
+          },
+          {
+            id: 'f1-cat-2',
+            nombre: 'Activaciones y Experiencia Ciudadana',
+            descripcion: 'Board de síntesis + imágenes o videocaso explicativo',
+          },
+          {
+            id: 'f1-cat-3',
+            nombre: 'Gráfica y Vía Pública',
+            descripcion: 'Board + hasta 3 piezas gráficas o PDF de campaña',
+          },
+          {
+            id: 'f1-cat-4',
+            nombre: 'Innovación Digital con Propósito',
+            descripcion: 'Board + prototipo/caso explicando la mecánica digital',
+          },
+        ],
+        criterios: [
+          'Relevancia social e insight (30%)',
+          'Originalidad de la idea (35%)',
+          'Claridad de ejecución y craft (20%)',
+          'Viabilidad e impacto potencial (15%)',
+        ],
+        faq: [
+          {
+            pregunta: '¿Puedo inscribir el mismo proyecto en más de una categoría?',
+            respuesta:
+              'Texto de ejemplo para la demo: Sí, siempre que adaptes el enfoque de la pieza a lo que evalúa cada categoría.',
+          },
+          {
+            pregunta: '¿El board puede llevar el logo de Brother?',
+            respuesta:
+              'Texto de ejemplo para la demo: Para la preselección interna sí; antes del envío externo coordinación revisa el anonimato según bases oficiales.',
+          },
+          {
+            pregunta: '¿Hace falta que la pieza esté producida de verdad?',
+            respuesta:
+              'Texto de ejemplo para la demo: No, alcanza con maquetas claras, mockups verosímiles y un board que explique la idea sin vueltas.',
+          },
+        ],
+      },
+      {
+        id: 'fest-2',
+        nombre: 'Push the Power',
+        web: 'https://brotherad.com',
+        deadline: offsetDaysISO(29),
+        logo: 'seed/fest-push.svg',
+        estado: 'abierto',
+        bajada:
+          'Competencia creativa anual de la red Brother para cruzar las mejores carpetas y duplas de todas las sedes.',
+        brief:
+          'Texto de ejemplo para la demo: Brief libre sobre marcas reales o emergentes que rompan convenciones de su categoría. Se premia el riesgo creativo, el craft en redacción/dirección de arte y las ideas que te darían ganas de haber pensado vos.',
+        reglas:
+          'Texto de ejemplo para la demo: Abierto a todos los cursos anuales e intensivos. Los proyectos pueden ser individuales o en dupla. Toda inscripción queda registrada internamente para la revisión del jurado docente.',
+        categorias: [
+          {
+            id: 'f2-cat-1',
+            nombre: 'Mejor Idea Integral / Caso',
+            descripcion: 'Board + videocaso opcional + carpeta PDF',
+          },
+          {
+            id: 'f2-cat-2',
+            nombre: 'Craft en Redacción y Gráfica',
+            descripcion: 'Board + piezas gráficas con foco en titular y copy',
+          },
+          {
+            id: 'f2-cat-3',
+            nombre: 'Digital, Social & Stunts',
+            descripcion: 'Board + recorrido de la acción en plataformas o calle',
+          },
+        ],
+        criterios: [
+          'Frescura y riesgo conceptual (40%)',
+          'Ejecución de arte y copy (35%)',
+          'Síntesis en el board de presentación (25%)',
+        ],
+        faq: [
+          {
+            pregunta: '¿Cuántos proyectos podemos presentar por dupla?',
+            respuesta:
+              'Texto de ejemplo para la demo: No hay tope interno, pero recomendamos elegir sus 2 o 3 carpetas más fuertes.',
+          },
+          {
+            pregunta: '¿Se puede editar un proyecto después de inscribirlo?',
+            respuesta:
+              'Texto de ejemplo para la demo: Sí, mientras el festival siga abierto los cambios que guardes en tu proyecto se reflejan automáticamente.',
+          },
+        ],
+      },
+      {
+        id: 'fest-3',
+        nombre: 'El Diente · Estudiantes',
+        web: 'https://www.creatividadargentina.org',
+        deadline: offsetDaysISO(-15),
+        logo: 'seed/fest-diente.svg',
+        estado: 'cerrado',
+        bajada:
+          'Categoría estudiantil del Círculo de Creatividad Argentina sobre brief real de marca invitada.',
+        brief:
+          'Texto de ejemplo para la demo: Convocatoria cerrada de la última edición estudiantil del CCA. El desafío consistió en reconectar una marca clásica argentina con rituales cotidianos de la generación sub-25 sin apelar a la nostalgia solemne.',
+        reglas:
+          'Texto de ejemplo para la demo: Convocatoria finalizada. Queda disponible como referencia de bases, categorías e inscripciones registradas por alumnos de la escuela.',
+        categorias: [
+          {
+            id: 'f3-cat-1',
+            nombre: 'Estudiantes · Film',
+            descripcion: 'Guion filmado o animatic de hasta 90 segundos + board',
+          },
+          {
+            id: 'f3-cat-2',
+            nombre: 'Estudiantes · Gráfica',
+            descripcion: 'Pieza única o campaña de hasta 3 avisos + board',
+          },
+          {
+            id: 'f3-cat-3',
+            nombre: 'Estudiantes · Activación & Promo',
+            descripcion: 'Board conceptual detallando mecánica y resultados esperados',
+          },
+        ],
+        criterios: [
+          'Idea y concepto rector (40%)',
+          'Pertinencia al brief de la marca invitada (30%)',
+          'Dirección de arte y redacción (30%)',
+        ],
+        faq: [
+          {
+            pregunta: '¿Por qué no aparece el botón para inscribir?',
+            respuesta:
+              'Texto de ejemplo para la demo: Porque el deadline de esta edición ya cerró. Podés consultar las convocatorias activas en la pestaña "Abiertos".',
+          },
+        ],
+      },
+    ],
+    inscripciones: [
+      {
+        id: 'insc-1',
+        proyectoId: 'proj-01',
+        festivalId: 'fest-1',
+        categoriaIds: ['f1-cat-1', 'f1-cat-2'],
+        fecha: offsetDaysISO(-4),
+      },
+      {
+        id: 'insc-2',
+        proyectoId: 'proj-01',
+        festivalId: 'fest-2',
+        categoriaIds: ['f2-cat-1'],
+        fecha: offsetDaysISO(-3),
+      },
+      {
+        id: 'insc-3',
+        proyectoId: 'proj-02',
+        festivalId: 'fest-1',
+        categoriaIds: ['f1-cat-2'],
+        fecha: offsetDaysISO(-3),
+      },
+      {
+        id: 'insc-4',
+        proyectoId: 'proj-03',
+        festivalId: 'fest-2',
+        categoriaIds: ['f2-cat-2'],
+        fecha: offsetDaysISO(-5),
+      },
+      {
+        id: 'insc-5',
+        proyectoId: 'proj-04',
+        festivalId: 'fest-2',
+        categoriaIds: ['f2-cat-3'],
+        fecha: offsetDaysISO(-2),
+      },
+      {
+        id: 'insc-6',
+        proyectoId: 'proj-06',
+        festivalId: 'fest-3',
+        categoriaIds: ['f3-cat-1'],
+        fecha: offsetDaysISO(-18),
+      },
+      {
+        id: 'insc-7',
+        proyectoId: 'proj-07',
+        festivalId: 'fest-2',
+        categoriaIds: ['f2-cat-2'],
+        fecha: offsetDaysISO(-1),
+      },
+    ],
+  };
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 840" width="600" height="840">
+  <rect width="600" height="840" fill="#1f2937"/>
+  <rect x="32" y="32" width="536" height="776" fill="none" stroke="#9ca3af" stroke-width="2" stroke-opacity="0.45"/>
+  <rect x="56" y="64" width="148" height="36" rx="18" fill="#9ca3af" fill-opacity="0.2"/>
+  <text x="130" y="88" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#9ca3af" text-anchor="middle" letter-spacing="1">DIGITAL</text>
+  <text x="56" y="390" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="700" fill="#ffffff">Playlist de</text>
+  <text x="56" y="446" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="700" fill="#9ca3af">espera bancaria</text>
+  <line x1="56" y1="490" x2="220" y2="490" stroke="#ffffff" stroke-width="3" stroke-opacity="0.5"/>
+  <text x="56" y="756" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600" fill="#ffffff" fill-opacity="0.8">BROTHER · ESCUELA DE CREATIVOS</text>
+  <text x="56" y="780" font-family="Inter, Arial, sans-serif" font-size="13" fill="#ffffff" fill-opacity="0.55">Board de presentación · Pieza de ejemplo</text>
+</svg>

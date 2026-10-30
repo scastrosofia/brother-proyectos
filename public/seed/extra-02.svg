@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <rect width="800" height="500" fill="#1e293b"/>
+  <rect x="24" y="24" width="752" height="452" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-dasharray="6 6"/>
+  <text x="400" y="245" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="600" fill="#ffffff" text-anchor="middle">Mockup App Mobile</text>
+  <text x="400" y="280" font-family="Inter, Arial, sans-serif" font-size="15" fill="#cbd5e1" text-anchor="middle">Imagen adicional de ejemplo · Demo Brother</text>
+</svg>
