@@ -16,7 +16,11 @@ import {
   getCursos,
   getFestivales,
 } from '../../lib/store';
-import { CATEGORIAS, type Categoria } from '../../types/models';
+import {
+  CATEGORIAS,
+  getProyectoCategorias,
+  type Categoria,
+} from '../../types/models';
 
 export const ProyectosRanking: React.FC = () => {
   const { usuario } = useSession();
@@ -48,7 +52,7 @@ export const ProyectosRanking: React.FC = () => {
       'Posición',
       'Proyecto',
       'Alumnos',
-      'Categoría',
+      'Categorías',
       'Curso',
       'Promedio general',
       'Cantidad de evaluaciones',
@@ -60,7 +64,7 @@ export const ProyectosRanking: React.FC = () => {
       idx + 1,
       item.proyecto.nombre,
       item.integrantesNombres,
-      item.proyecto.categoria,
+      getProyectoCategorias(item.proyecto).join(' / '),
       item.cursoNombre,
       formatearPromedio(item.promedioGeneral),
       item.cantidadEvaluaciones,
@@ -271,7 +275,7 @@ export const ProyectosRanking: React.FC = () => {
               <tr>
                 <th style={{ width: 48 }}>#</th>
                 <th>Proyecto</th>
-                <th>Categoría</th>
+                <th>Categorías</th>
                 <th>Curso</th>
                 <th>Promedio {filters.orden === 'promedio' ? '↓' : ''}</th>
                 {esProfesor && <th>Mi voto</th>}
@@ -300,12 +304,13 @@ export const ProyectosRanking: React.FC = () => {
                             src={resolveAssetUrl(item.proyecto.boardImg)}
                             alt={item.proyecto.nombre}
                             style={{
-                              width: 48,
-                              height: 66,
+                              width: 96,
+                              aspectRatio: '16 / 9',
                               objectFit: 'cover',
                               borderRadius: 4,
                               border: '1px solid var(--border-color)',
                               display: 'block',
+                              flexShrink: 0,
                             }}
                           />
                         </Link>
@@ -329,7 +334,15 @@ export const ProyectosRanking: React.FC = () => {
                       </div>
                     </td>
 
-                    <td>{item.proyecto.categoria}</td>
+                    <td>
+                      <div className="chip-row">
+                        {getProyectoCategorias(item.proyecto).map((cat) => (
+                          <span key={cat} className="chip">
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
                     <td>{item.cursoNombre}</td>
 
                     <td>

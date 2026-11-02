@@ -9,6 +9,7 @@ import {
   getInscripciones,
   getProyectoById,
 } from '../../lib/store';
+import { getProyectoCategorias } from '../../types/models';
 
 export const MisInscripciones: React.FC = () => {
   const { usuario } = useSession();
@@ -99,11 +100,12 @@ export const MisInscripciones: React.FC = () => {
                           src={resolveAssetUrl(proj.boardImg)}
                           alt={proj.nombre}
                           style={{
-                            width: 40,
-                            height: 56,
+                            width: 84,
+                            aspectRatio: '16 / 9',
                             objectFit: 'cover',
                             borderRadius: 4,
                             border: '1px solid var(--border-color)',
+                            flexShrink: 0,
                           }}
                         />
                         <div>
@@ -114,7 +116,7 @@ export const MisInscripciones: React.FC = () => {
                             {proj.nombre}
                           </Link>
                           <div style={{ fontSize: 12, color: 'var(--text-soft)' }}>
-                            {proj.categoria}
+                            {getProyectoCategorias(proj).join(' · ')}
                           </div>
                         </div>
                       </div>

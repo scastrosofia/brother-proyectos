@@ -12,7 +12,7 @@ import {
   getProyectosByAlumno,
   getUsuarioById,
 } from '../../lib/store';
-import type { Proyecto } from '../../types/models';
+import { getProyectoCategorias, type Proyecto } from '../../types/models';
 
 export const MisProyectos: React.FC = () => {
   const { usuario } = useSession();
@@ -130,7 +130,11 @@ export const MisProyectos: React.FC = () => {
                   </div>
 
                   <div className="chip-row" style={{ marginTop: 8 }}>
-                    <span className="chip">{proj.categoria}</span>
+                    {getProyectoCategorias(proj).map((cat) => (
+                      <span key={cat} className="chip">
+                        {cat}
+                      </span>
+                    ))}
                     {curso && <span className="chip">{curso.nombre}</span>}
                     {comentariosProj.length > 0 && (
                       <span

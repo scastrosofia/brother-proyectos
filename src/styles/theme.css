@@ -679,14 +679,14 @@ p {
 /* A1: Tarjeta horizontal de proyecto */
 .project-row-card {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
+  grid-template-columns: 268px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
 
 .project-row-card__thumb {
-  width: 132px;
-  aspect-ratio: 5 / 7;
+  width: 268px;
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   object-fit: cover;
@@ -784,17 +784,17 @@ p {
   justify-content: center;
 }
 
-/* A3 & B2: Ficha de proyecto */
+/* A3 & B2: Ficha de proyecto (board horizontal 1920x1080) */
 .project-detail-hero {
   display: grid;
-  grid-template-columns: minmax(280px, 420px) minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: minmax(460px, 1.38fr) minmax(320px, 1fr);
+  gap: 28px;
   align-items: start;
 }
 
 .board-preview-large {
   width: 100%;
-  aspect-ratio: 5 / 7;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
@@ -1135,7 +1135,7 @@ p {
 
   .project-row-card__thumb {
     width: 100%;
-    max-width: 220px;
+    max-width: 100%;
   }
 
   .form-row-2 {

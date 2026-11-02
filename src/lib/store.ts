@@ -66,6 +66,7 @@ function isQuotaError(err: unknown): boolean {
 function hydrateLegacyStore(data: DemoStoreData): DemoStoreData {
   const seed = createSeedData();
   const seedUsersById = new Map(seed.usuarios.map((u) => [u.id, u]));
+  const seedProjectsById = new Map(seed.proyectos.map((p) => [p.id, p]));
   let changed = false;
 
   const usuarios = data.usuarios.map((u) => {
@@ -90,6 +91,25 @@ function hydrateLegacyStore(data: DemoStoreData): DemoStoreData {
     return u;
   });
 
+  const proyectos = data.proyectos.map((p) => {
+    if (Array.isArray(p.categorias) && p.categorias.length > 0) {
+      return p;
+    }
+    changed = true;
+    const seedP = seedProjectsById.get(p.id);
+    const fallbackCats =
+      seedP?.categorias && seedP.categorias.length > 0
+        ? seedP.categorias
+        : p.categoria
+          ? [p.categoria]
+          : ['Film' as const];
+    return {
+      ...p,
+      categoria: fallbackCats[0],
+      categorias: fallbackCats,
+    };
+  });
+
   const comentarios = Array.isArray(data.comentarios)
     ? data.comentarios
     : ((changed = true), seed.comentarios);
@@ -101,7 +121,14 @@ function hydrateLegacyStore(data: DemoStoreData): DemoStoreData {
     : ((changed = true), seed.notificaciones);
 
   return changed
-    ? { ...data, usuarios, comentarios, tagsProfesores, notificaciones }
+    ? {
+        ...data,
+        usuarios,
+        proyectos,
+        comentarios,
+        tagsProfesores,
+        notificaciones,
+      }
     : data;
 }
 
@@ -379,19 +406,31 @@ export function getProyectoById(id: string): Proyecto | undefined {
   return readStore().proyectos.find((p) => p.id === id);
 }
 
-export type SaveProyectoInput = Omit<Proyecto, 'id' | 'creadoEn' | 'actualizadoEn'> & {
+export type SaveProyectoInput = Omit<
+  Proyecto,
+  'id' | 'categoria' | 'creadoEn' | 'actualizadoEn'
+> & {
   id?: string;
+  categoria?: Proyecto['categoria'];
 };
 
 export function saveProyecto(input: SaveProyectoInput): Proyecto {
   const data = readStore();
   const now = todayISO();
+  const categoriasLimpias =
+    input.categorias.length > 0
+      ? Array.from(new Set(input.categorias))
+      : [input.categoria ?? 'Film'];
+  const categoriaPrincipal = categoriasLimpias[0];
+
   if (input.id) {
     const idx = data.proyectos.findIndex((p) => p.id === input.id);
     if (idx >= 0) {
       const updated: Proyecto = {
         ...data.proyectos[idx],
         ...input,
+        categoria: categoriaPrincipal,
+        categorias: categoriasLimpias,
         id: data.proyectos[idx].id,
         creadoEn: data.proyectos[idx].creadoEn,
         actualizadoEn: now,
@@ -403,6 +442,8 @@ export function saveProyecto(input: SaveProyectoInput): Proyecto {
   }
   const created: Proyecto = {
     ...input,
+    categoria: categoriaPrincipal,
+    categorias: categoriasLimpias,
     id: generateId('proj'),
     creadoEn: now,
     actualizadoEn: now,

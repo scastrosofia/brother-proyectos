@@ -6,6 +6,7 @@ import { resolveAssetUrl } from '../../lib/assets';
 import {
   getYouTubeEmbedUrl,
   readPdfAsDataUrl,
+  resizeBoardToDataUrl,
   resizeImageToDataUrl,
 } from '../../lib/media';
 import {
@@ -15,7 +16,11 @@ import {
   saveProyecto,
   StorageQuotaError,
 } from '../../lib/store';
-import { CATEGORIAS, type Categoria } from '../../types/models';
+import {
+  CATEGORIAS,
+  getProyectoCategorias,
+  type Categoria,
+} from '../../types/models';
 
 const MAX_DESCRIPCION = 600;
 
@@ -30,8 +35,8 @@ export const ProyectoForm: React.FC = () => {
   const existing = id ? getProyectoById(id) : undefined;
 
   const [nombre, setNombre] = useState(existing?.nombre ?? '');
-  const [categoria, setCategoria] = useState<Categoria>(
-    existing?.categoria ?? 'Film'
+  const [categorias, setCategorias] = useState<Categoria[]>(() =>
+    existing ? getProyectoCategorias(existing) : ['Film']
   );
   const [cursoId, setCursoId] = useState(
     existing?.cursoId ?? usuario.cursoId ?? ''
@@ -104,7 +109,7 @@ export const ProyectoForm: React.FC = () => {
     setProcesandoMedia(true);
     setMediaNotice(null);
     try {
-      const resized = await resizeImageToDataUrl(file);
+      const resized = await resizeBoardToDataUrl(file);
       setBoardImg(resized);
       setErrors((prev) => {
         const next = { ...prev };
@@ -170,10 +175,29 @@ export const ProyectoForm: React.FC = () => {
     setIntegrantes((prev) => prev.filter((uid) => uid !== alumnoId));
   };
 
+  const toggleCategoria = (cat: Categoria) => {
+    setCategorias((prev) => {
+      const exists = prev.includes(cat);
+      const next = exists
+        ? prev.filter((c) => c !== cat)
+        : CATEGORIAS.filter((c) => prev.includes(c) || c === cat);
+      return next;
+    });
+    setErrors((prev) => {
+      if (!prev.categorias) return prev;
+      const next = { ...prev };
+      delete next.categorias;
+      return next;
+    });
+  };
+
   const validar = (): boolean => {
     const nextErrors: Record<string, string> = {};
     if (!nombre.trim()) {
       nextErrors.nombre = 'Ingresá el nombre del proyecto.';
+    }
+    if (categorias.length === 0) {
+      nextErrors.categorias = 'Elegí al menos una categoría para el proyecto.';
     }
     if (!cursoId) {
       nextErrors.cursoId = 'Elegí el curso en el que hiciste el proyecto.';
@@ -186,7 +210,7 @@ export const ProyectoForm: React.FC = () => {
     }
     if (!boardImg) {
       nextErrors.boardImg =
-        'Subí la imagen vertical del board (es obligatoria para presentar el caso).';
+        'Subí la imagen horizontal del board en 1920×1080 px (es obligatoria para presentar el caso).';
     }
     if (youtubeInvalido) {
       nextErrors.youtubeUrl =
@@ -205,7 +229,7 @@ export const ProyectoForm: React.FC = () => {
       const guardado = saveProyecto({
         id: existing?.id,
         nombre: nombre.trim(),
-        categoria,
+        categorias,
         boardImg,
         youtubeUrl: youtubeUrl.trim() || undefined,
         imagenes,
@@ -228,7 +252,7 @@ export const ProyectoForm: React.FC = () => {
 
   const checklistItems = [
     { label: 'Nombre', done: Boolean(nombre.trim()) },
-    { label: 'Categoría', done: Boolean(categoria) },
+    { label: 'Categorías', done: categorias.length > 0 },
     { label: 'Board', done: Boolean(boardImg) },
     { label: 'Curso', done: Boolean(cursoId) },
     { label: 'Alumnos', done: integrantes.length > 0 },
@@ -305,35 +329,67 @@ export const ProyectoForm: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <span className="form-label">Categoría (elegí una) *</span>
-                <div className="pill-group" role="radiogroup" aria-label="Categoría">
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span className="form-label">
+                    Categorías (podés elegir más de una) *
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-soft)' }}>
+                    {categorias.length}{' '}
+                    {categorias.length === 1 ? 'seleccionada' : 'seleccionadas'}
+                  </span>
+                </div>
+                <div
+                  className="pill-group"
+                  role="group"
+                  aria-label="Categorías del proyecto"
+                >
                   {CATEGORIAS.map((cat) => {
-                    const active = categoria === cat;
+                    const active = categorias.includes(cat);
                     return (
                       <button
                         key={cat}
                         type="button"
-                        role="radio"
-                        aria-checked={active}
+                        aria-pressed={active}
                         className={`pill ${active ? 'pill--active' : ''}`}
-                        onClick={() => setCategoria(cat)}
+                        onClick={() => toggleCategoria(cat)}
                       >
                         <span
                           aria-hidden="true"
                           style={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            border: '2px solid currentColor',
-                            background: active ? 'currentColor' : 'transparent',
-                            display: 'inline-block',
+                            width: 15,
+                            height: 15,
+                            borderRadius: 3,
+                            border: active
+                              ? '1.5px solid #ffffff'
+                              : '1.5px solid var(--border-strong)',
+                            background: active ? '#ffffff' : 'transparent',
+                            color: active ? 'var(--bg-dark)' : 'transparent',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 10,
+                            fontWeight: 800,
+                            lineHeight: 1,
                           }}
-                        />
+                        >
+                          {active ? '✓' : ''}
+                        </span>
                         {cat}
                       </button>
                     );
                   })}
                 </div>
+                {errors.categorias && (
+                  <span className="form-error">{errors.categorias}</span>
+                )}
               </div>
 
               <div className="form-row-2">
@@ -480,7 +536,7 @@ export const ProyectoForm: React.FC = () => {
               {/* Board obligatorio */}
               <div className="form-group">
                 <span className="form-label">
-                  Imagen del board *{' '}
+                  Imagen del board (1920 × 1080 px) *{' '}
                   <span className="chip chip--blue">obligatorio</span>
                 </span>
 
@@ -521,8 +577,8 @@ export const ProyectoForm: React.FC = () => {
                         src={resolveAssetUrl(boardImg)}
                         alt="Vista previa del board"
                         style={{
-                          width: 140,
-                          aspectRatio: '5 / 7',
+                          width: 240,
+                          aspectRatio: '16 / 9',
                           objectFit: 'cover',
                           borderRadius: 6,
                           border: '1px solid var(--border-color)',
@@ -530,7 +586,7 @@ export const ProyectoForm: React.FC = () => {
                       />
                       <div style={{ textAlign: 'left' }}>
                         <p style={{ fontWeight: 600, marginBottom: 6 }}>
-                          Board cargado correctamente
+                          Board horizontal cargado (1920 × 1080)
                         </p>
                         <p className="form-hint" style={{ marginBottom: 12 }}>
                           Hacé clic o arrastrá otra imagen si querés reemplazarlo.
@@ -543,10 +599,10 @@ export const ProyectoForm: React.FC = () => {
                       <p style={{ fontWeight: 600, marginBottom: 4 }}>
                         {procesandoMedia
                           ? 'Procesando imagen...'
-                          : 'Arrastrá la imagen o hacé clic para subir'}
+                          : 'Arrastrá el board horizontal o hacé clic para subir'}
                       </p>
                       <p className="form-hint">
-                        JPG / PNG · se optimiza automáticamente a máx. 1200 px · se usa como portada
+                        Formato horizontal 1920 × 1080 px (16:9) · JPG / PNG · se usa como portada
                       </p>
                     </div>
                   )}
@@ -760,7 +816,7 @@ export const ProyectoForm: React.FC = () => {
                   alt="Vista previa del board"
                   style={{
                     width: '100%',
-                    aspectRatio: '5 / 7',
+                    aspectRatio: '16 / 9',
                     objectFit: 'cover',
                     borderRadius: 6,
                     border: '1px solid var(--border-color)',
@@ -771,7 +827,7 @@ export const ProyectoForm: React.FC = () => {
                 <div
                   style={{
                     width: '100%',
-                    aspectRatio: '5 / 7',
+                    aspectRatio: '16 / 9',
                     borderRadius: 6,
                     border: '1px dashed var(--border-strong)',
                     background: 'var(--bg-subtle)',
@@ -783,15 +839,26 @@ export const ProyectoForm: React.FC = () => {
                     marginBottom: 12,
                   }}
                 >
-                  Board
+                  Board 1920 × 1080
                 </div>
               )}
 
-              <h3 style={{ fontSize: 16, marginBottom: 4 }}>
+              <h3 style={{ fontSize: 16, marginBottom: 6 }}>
                 {nombre.trim() || 'Nombre del proyecto'}
               </h3>
+              <div className="chip-row" style={{ marginBottom: 6 }}>
+                {categorias.length > 0 ? (
+                  categorias.map((cat) => (
+                    <span key={cat} className="chip">
+                      {cat}
+                    </span>
+                  ))
+                ) : (
+                  <span className="chip">[Sin categorías]</span>
+                )}
+              </div>
               <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                {categoria} · {cursoSeleccionado?.nombre ?? '[Curso]'}
+                {cursoSeleccionado?.nombre ?? '[Curso]'}
               </p>
             </div>
 

@@ -15,7 +15,7 @@ import {
   getUsuarioById,
   getUsuariosByRol,
 } from '../../lib/store';
-import type { Usuario } from '../../types/models';
+import { getProyectoCategorias, type Usuario } from '../../types/models';
 
 type OperadorPorcentaje = '' | 'gte' | 'lte' | 'eq';
 
@@ -229,7 +229,7 @@ export const AdminProfesores: React.FC = () => {
           profUltima,
           `${item.pctVistos}% (${item.vistosCount}/${totalProyectos})`,
           proj?.nombre ?? ev.proyectoId,
-          proj?.categoria ?? '',
+          proj ? getProyectoCategorias(proj).join(' / ') : '',
           curso?.nombre ?? '',
           alumnos,
           ...criterios.map((c) => ev.puntajes[c.id] ?? ''),

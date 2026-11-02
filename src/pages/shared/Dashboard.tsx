@@ -10,7 +10,7 @@ import {
   getInscripciones,
   getProyectos,
 } from '../../lib/store';
-import { CATEGORIAS } from '../../types/models';
+import { CATEGORIAS, getProyectoCategorias } from '../../types/models';
 import { AlumnoDashboard } from '../alumno/AlumnoDashboard';
 
 function formatPercentage(part: number, total: number): string {
@@ -126,7 +126,9 @@ export const Dashboard: React.FC = () => {
   // 3. Desglose por Categoría general del proyecto (Film / Activación / Gráfica / Digital)
   const porCategoriaProyecto = useMemo(() => {
     return CATEGORIAS.map((cat) => {
-      const proysDeCat = proyectos.filter((p) => p.categoria === cat);
+      const proysDeCat = proyectos.filter((p) =>
+        getProyectoCategorias(p).includes(cat)
+      );
       const inscriptosDeCat = proysDeCat.filter((p) =>
         proyectosInscriptosIds.has(p.id)
       );

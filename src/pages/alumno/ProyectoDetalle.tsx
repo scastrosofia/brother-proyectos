@@ -15,6 +15,7 @@ import {
   getProyectoById,
   getUsuarioById,
 } from '../../lib/store';
+import { getProyectoCategorias } from '../../types/models';
 
 export const ProyectoDetalle: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -112,7 +113,11 @@ export const ProyectoDetalle: React.FC = () => {
           </h1>
 
           <div className="chip-row" style={{ marginBottom: 16 }}>
-            <span className="chip">{proyecto.categoria}</span>
+            {getProyectoCategorias(proyecto).map((cat) => (
+              <span key={cat} className="chip">
+                {cat}
+              </span>
+            ))}
             {curso && <span className="chip">{curso.nombre}</span>}
           </div>
 

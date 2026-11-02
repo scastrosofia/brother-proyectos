@@ -1,11 +1,79 @@
 import { resolveAssetUrl } from './assets';
 
 const MAX_IMAGE_SIDE = 1200;
+export const BOARD_WIDTH = 1920;
+export const BOARD_HEIGHT = 1080;
 const JPEG_QUALITY = 0.7;
 export const MAX_PDF_BYTES = 1024 * 1024; // 1 MB
 
 /**
- * Redimensiona una imagen en el navegador usando canvas a máx. 1200 px de lado
+ * Redimensiona/encuadra la imagen del board al formato horizontal estándar 1920×1080 (16:9)
+ * y la exporta en JPG optimizado como dataURL.
+ */
+export function resizeBoardToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(
+        new Error(
+          'El archivo seleccionado no es una imagen válida (usá JPG, PNG o WebP).'
+        )
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () =>
+      reject(new Error('No se pudo leer el archivo de imagen.'));
+    reader.onload = () => {
+      const src = reader.result as string;
+      const img = new Image();
+      img.onerror = () =>
+        reject(new Error('No se pudo procesar la imagen seleccionada.'));
+      img.onload = () => {
+        const srcW = img.naturalWidth || img.width || BOARD_WIDTH;
+        const srcH = img.naturalHeight || img.height || BOARD_HEIGHT;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = BOARD_WIDTH;
+        canvas.height = BOARD_HEIGHT;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(
+            new Error('Tu navegador no soporta redimensionado con canvas.')
+          );
+          return;
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+
+        // Encuadre cover centrado a 16:9 (1920x1080)
+        const targetRatio = BOARD_WIDTH / BOARD_HEIGHT;
+        const srcRatio = srcW / srcH;
+        let sx = 0;
+        let sy = 0;
+        let sw = srcW;
+        let sh = srcH;
+
+        if (srcRatio > targetRatio) {
+          sw = Math.round(srcH * targetRatio);
+          sx = Math.round((srcW - sw) / 2);
+        } else if (srcRatio < targetRatio) {
+          sh = Math.round(srcW / targetRatio);
+          sy = Math.round((srcH - sh) / 2);
+        }
+
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+        resolve(canvas.toDataURL('image/jpeg', 0.68));
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Redimensiona una imagen adicional en el navegador usando canvas a máx. 1200 px de lado
  * y exporta en formato JPG con calidad 0.7 como dataURL.
  */
 export function resizeImageToDataUrl(file: File): Promise<string> {

@@ -8,7 +8,11 @@ import {
   getProyectos,
   getUsuarioById,
 } from './store';
-import type { Categoria, Proyecto } from '../types/models';
+import {
+  getProyectoCategorias,
+  type Categoria,
+  type Proyecto,
+} from '../types/models';
 
 export type OrdenProyectos =
   | 'promedio'
@@ -110,7 +114,10 @@ export function getProyectosFiltradosYOrdenados(
       : null;
 
     if (p.id !== alwaysIncludeProjectId) {
-      if (filters.categoria !== 'Todas' && p.categoria !== filters.categoria) {
+      if (
+        filters.categoria !== 'Todas' &&
+        !getProyectoCategorias(p).includes(filters.categoria)
+      ) {
         continue;
       }
       if (filters.cursoId && p.cursoId !== filters.cursoId) {

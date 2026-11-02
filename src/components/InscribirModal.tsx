@@ -8,6 +8,7 @@ import {
   getProyectosByAlumno,
   inscribirProyectoEnFestival,
 } from '../lib/store';
+import { getProyectoCategorias } from '../types/models';
 
 interface InscribirModalProps {
   open: boolean;
@@ -74,6 +75,22 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
       : undefined;
 
   const yaInscriptasSet = new Set(inscripcionExistente?.categoriaIds ?? []);
+  const categoriasDisponibles = festivalActual
+    ? festivalActual.categorias.filter((c) => !yaInscriptasSet.has(c.id))
+    : [];
+  const todasSeleccionadas =
+    categoriasDisponibles.length > 0 &&
+    categoriasDisponibles.every((c) => selectedCategorias.includes(c.id));
+
+  const toggleTodasCategorias = () => {
+    if (!proyectoActual || categoriasDisponibles.length === 0) return;
+    if (todasSeleccionadas) {
+      setSelectedCategorias([]);
+    } else {
+      setSelectedCategorias(categoriasDisponibles.map((c) => c.id));
+    }
+    setErrorMsg(null);
+  };
 
   const toggleCategoria = (catId: string) => {
     if (yaInscriptasSet.has(catId)) return;
@@ -106,7 +123,7 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
       return;
     }
     if (selectedCategorias.length === 0) {
-      setErrorMsg('Seleccioná al menos una categoría disponible.');
+      setErrorMsg('Seleccioná una o más categorías disponibles.');
       return;
     }
     if (!aceptoReglas) {
@@ -210,8 +227,8 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
                       src={resolveAssetUrl(proyectoActual.boardImg)}
                       alt={proyectoActual.nombre}
                       style={{
-                        width: 44,
-                        height: 60,
+                        width: 88,
+                        aspectRatio: '16 / 9',
                         objectFit: 'cover',
                         borderRadius: 4,
                         border: '1px solid var(--border-color)',
@@ -227,7 +244,7 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
                   >
                     {misProyectos.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.nombre} — {p.categoria}
+                        {p.nombre} — {getProyectoCategorias(p).join(' / ')}
                       </option>
                     ))}
                   </select>
@@ -256,9 +273,39 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
             {/* Tabla de categorías */}
             {festivalActual && (
               <div className="form-group">
-                <span className="form-label">
-                  Elegí las categorías en las que querés participar
-                </span>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span className="form-label">
+                    Elegí una o más categorías para participar
+                  </span>
+                  {proyectoActual && categoriasDisponibles.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={toggleTodasCategorias}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        color: 'var(--accent-blue)',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      {todasSeleccionadas
+                        ? 'Desmarcar todas'
+                        : 'Seleccionar todas'}
+                    </button>
+                  )}
+                </div>
                 <div className="table-wrap">
                   <table className="data-table">
                     <thead>

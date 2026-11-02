@@ -1,11 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 840" width="600" height="840">
-  <rect width="600" height="840" fill="#1e3a8a"/>
-  <rect x="32" y="32" width="536" height="776" fill="none" stroke="#93c5fd" stroke-width="2" stroke-opacity="0.45"/>
-  <rect x="56" y="64" width="148" height="36" rx="18" fill="#93c5fd" fill-opacity="0.2"/>
-  <text x="130" y="88" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#93c5fd" text-anchor="middle" letter-spacing="1">FILM</text>
-  <text x="56" y="390" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="700" fill="#ffffff">El último bondi</text>
-  <text x="56" y="446" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="700" fill="#93c5fd">a las tres</text>
-  <line x1="56" y1="490" x2="220" y2="490" stroke="#ffffff" stroke-width="3" stroke-opacity="0.5"/>
-  <text x="56" y="756" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600" fill="#ffffff" fill-opacity="0.8">BROTHER · ESCUELA DE CREATIVOS</text>
-  <text x="56" y="780" font-family="Inter, Arial, sans-serif" font-size="13" fill="#ffffff" fill-opacity="0.55">Board de presentación · Pieza de ejemplo</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <rect width="1920" height="1080" fill="#1e3a8a"/>
+  <rect x="48" y="48" width="1824" height="984" rx="8" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-opacity="0.4"/>
+
+  <!-- Chip de categoría -->
+  <rect x="112" y="108" width="210" height="50" rx="25" fill="#93c5fd" fill-opacity="0.18"/>
+  <text x="217" y="140" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="#93c5fd" text-anchor="middle" letter-spacing="2">FILM</text>
+
+  <!-- Titular principal del caso -->
+  <text x="112" y="420" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="800" fill="#ffffff">El último bondi</text>
+  <text x="112" y="526" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="800" fill="#93c5fd">a las tres</text>
+  <line x1="112" y1="590" x2="360" y2="590" stroke="#ffffff" stroke-width="4" stroke-opacity="0.55"/>
+  <text x="112" y="654" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="500" fill="#ffffff" fill-opacity="0.85">Movilidad nocturna · Estrategia colectiva en cada parada</text>
+
+  <!-- Bloques visuales de síntesis a la derecha (board horizontal 1920x1080) -->
+  <rect x="1156" y="132" width="644" height="444" rx="14" fill="#ffffff" fill-opacity="0.08" stroke="#93c5fd" stroke-opacity="0.35" stroke-width="2"/>
+  <text x="1478" y="346" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#93c5fd" text-anchor="middle" letter-spacing="1.5">KEY VISUAL PRINCIPAL</text>
+  <text x="1478" y="384" font-family="Inter, Arial, sans-serif" font-size="18" fill="#ffffff" fill-opacity="0.65" text-anchor="middle">Pieza central · Caso creativo</text>
+
+  <rect x="1156" y="612" width="308" height="300" rx="12" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.5"/>
+  <text x="1310" y="754" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" letter-spacing="1">INSIGHT &amp; IDEA</text>
+  <text x="1310" y="786" font-family="Inter, Arial, sans-serif" font-size="15" fill="#ffffff" fill-opacity="0.55" text-anchor="middle">Contexto y hallazgo</text>
+
+  <rect x="1492" y="612" width="308" height="300" rx="12" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.5"/>
+  <text x="1646" y="754" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" letter-spacing="1">EJECUCIÓN</text>
+  <text x="1646" y="786" font-family="Inter, Arial, sans-serif" font-size="15" fill="#ffffff" fill-opacity="0.55" text-anchor="middle">Desarrollo y puntos de contacto</text>
+
+  <!-- Pie del board -->
+  <text x="112" y="924" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#ffffff" fill-opacity="0.85" letter-spacing="1">BROTHER · ESCUELA DE CREATIVOS</text>
+  <text x="112" y="960" font-family="Inter, Arial, sans-serif" font-size="18" fill="#ffffff" fill-opacity="0.58">Board de presentación · 1920 × 1080 px</text>
 </svg>

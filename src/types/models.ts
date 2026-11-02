@@ -28,7 +28,8 @@ export interface Criterio {
 export interface Proyecto {
   id: string;
   nombre: string; // A1
-  categoria: Categoria; // A2 (una sola)
+  categoria: Categoria; // Categoría principal (compatibilidad: categorias[0])
+  categorias: Categoria[]; // A2 (una o más categorías)
   boardImg: string; // A3 obligatorio (ruta o dataURL)
   youtubeUrl?: string; // A4 opcional
   imagenes: string[]; // A5 opcional
@@ -38,6 +39,15 @@ export interface Proyecto {
   descripcion: string; // A9 (máx. 600 caracteres)
   creadoEn: string;
   actualizadoEn: string;
+}
+
+export function getProyectoCategorias(
+  proyecto: Pick<Proyecto, 'categoria'> & { categorias?: Categoria[] }
+): Categoria[] {
+  if (Array.isArray(proyecto.categorias) && proyecto.categorias.length > 0) {
+    return proyecto.categorias;
+  }
+  return proyecto.categoria ? [proyecto.categoria] : [];
 }
 
 export interface Evaluacion {

@@ -25,6 +25,7 @@ import {
   registrarVistaProyecto,
   saveEvaluacion,
 } from '../../lib/store';
+import { getProyectoCategorias } from '../../types/models';
 
 export const EvaluarProyecto: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -249,40 +250,36 @@ export const EvaluarProyecto: React.FC = () => {
         {/* Columna izquierda */}
         <div>
           <section className="card">
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(200px, 260px) minmax(0, 1fr)',
-                gap: 24,
-                alignItems: 'start',
-              }}
-            >
-              <div>
-                <img
-                  src={resolveAssetUrl(proyecto.boardImg)}
-                  alt={`Board de ${proyecto.nombre}`}
-                  className="board-preview-large"
-                  onClick={() => setLightboxIndex(0)}
-                />
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: 'var(--text-soft)',
-                    marginTop: 6,
-                    textAlign: 'center',
-                  }}
-                >
-                  Clic para ampliar
-                </p>
-              </div>
+            <div style={{ marginBottom: 20 }}>
+              <img
+                src={resolveAssetUrl(proyecto.boardImg)}
+                alt={`Board de ${proyecto.nombre}`}
+                className="board-preview-large"
+                onClick={() => setLightboxIndex(0)}
+              />
+              <p
+                style={{
+                  fontSize: 12,
+                  color: 'var(--text-soft)',
+                  marginTop: 6,
+                  textAlign: 'center',
+                }}
+              >
+                Board horizontal (1920 × 1080) · Clic para ampliar
+              </p>
+            </div>
 
-              <div>
-                <h1 style={{ fontSize: 28, lineHeight: 1.2, marginBottom: 12 }}>
-                  {proyecto.nombre}
-                </h1>
+            <div>
+              <h1 style={{ fontSize: 28, lineHeight: 1.2, marginBottom: 12 }}>
+                {proyecto.nombre}
+              </h1>
 
                 <div className="chip-row" style={{ marginBottom: 14 }}>
-                  <span className="chip">{proyecto.categoria}</span>
+                  {getProyectoCategorias(proyecto).map((cat) => (
+                    <span key={cat} className="chip">
+                      {cat}
+                    </span>
+                  ))}
                   {curso && <span className="chip">{curso.nombre}</span>}
                 </div>
 
@@ -310,7 +307,6 @@ export const EvaluarProyecto: React.FC = () => {
                     Abrir PDF ({proyecto.pdf.nombre})
                   </button>
                 )}
-              </div>
             </div>
           </section>
 
