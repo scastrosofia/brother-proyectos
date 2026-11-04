@@ -603,7 +603,7 @@ export const EvaluarProyecto: React.FC = () => {
                         style={{
                           marginTop: 8,
                           padding: 12,
-                          background: '#fafaf8',
+                          background: 'var(--bg-subtle)',
                           border: '1px solid var(--border-color)',
                           borderRadius: 8,
                           display: 'grid',

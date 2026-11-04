@@ -138,7 +138,7 @@ export const FestivalDetalle: React.FC = () => {
 
           <div
             style={{
-              background: '#f6f6f4',
+              background: 'var(--bg-subtle)',
               border: '1px solid var(--border-color)',
               borderRadius: 10,
               padding: 18,

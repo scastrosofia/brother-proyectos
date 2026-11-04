@@ -505,9 +505,13 @@ export const ProyectoComentariosSection: React.FC<{
                           fontSize: 12.5,
                           borderColor: com.solucionado
                             ? 'var(--border-color)'
-                            : '#86efac',
-                          background: com.solucionado ? '#ffffff' : '#f0fdf4',
-                          color: com.solucionado ? 'var(--text-main)' : '#166534',
+                            : 'var(--accent-green)',
+                          background: com.solucionado
+                            ? 'var(--bg-card)'
+                            : 'rgba(0, 254, 57, 0.12)',
+                          color: com.solucionado
+                            ? 'var(--text-main)'
+                            : 'var(--accent-green)',
                         }}
                         onClick={() =>
                           toggleComentarioSolucionado(com.id, usuario.id)

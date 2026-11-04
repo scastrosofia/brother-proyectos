@@ -35,7 +35,8 @@ export const StarRating: React.FC<StarRatingProps> = ({
               aria-hidden="true"
               style={{
                 fontSize: 15,
-                color: filled ? 'var(--accent-blue)' : '#c8c8c0',
+                color: filled ? 'var(--accent-yellow)' : '#444444',
+                textShadow: filled ? '0 0 6px rgba(254, 254, 61, 0.4)' : 'none',
               }}
             >
               {filled ? '★' : '☆'}

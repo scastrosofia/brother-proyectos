@@ -368,10 +368,10 @@ export const ProyectoForm: React.FC = () => {
                             height: 15,
                             borderRadius: 3,
                             border: active
-                              ? '1.5px solid #ffffff'
+                              ? '1.5px solid #000000'
                               : '1.5px solid var(--border-strong)',
-                            background: active ? '#ffffff' : 'transparent',
-                            color: active ? 'var(--bg-dark)' : 'transparent',
+                            background: active ? '#000000' : 'transparent',
+                            color: active ? 'var(--accent-yellow)' : 'transparent',
                             display: 'inline-flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -737,7 +737,7 @@ export const ProyectoForm: React.FC = () => {
                       padding: '12px 16px',
                       border: '1px solid var(--border-color)',
                       borderRadius: 8,
-                      background: '#fafaf8',
+                      background: 'var(--bg-subtle)',
                     }}
                   >
                     <span style={{ fontSize: 14, fontWeight: 500 }}>
