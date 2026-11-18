@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { useSession } from '../../context/SessionContext';
@@ -21,10 +21,15 @@ import {
   getProyectoCategorias,
   type Categoria,
 } from '../../types/models';
+import { sincronizarProyectosDesdeSupabase } from '../../lib/proyectosService';
 
 export const ProyectosRanking: React.FC = () => {
   const { usuario } = useSession();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    sincronizarProyectosDesdeSupabase();
+  }, []);
 
   const esProfesor = usuario.rol === 'profesor';
   const esAdmin = usuario.rol === 'admin';

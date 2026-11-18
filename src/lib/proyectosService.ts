@@ -1,4 +1,5 @@
 ﻿import { supabase } from './supabase';
+import { saveProyecto, getProyectos } from './store';
 
 /**
  * Convierte un Data URL (base64) a un Blob de JS
@@ -244,4 +245,38 @@ export async function getEvaluacionesSupabase(proyectoId: string) {
   });
 
   return Object.values(agrupadas);
+}
+
+/**
+ * Sincroniza proyectos de Supabase en el store local para que aparezcan en el ranking
+ */
+export async function sincronizarProyectosDesdeSupabase() {
+  const { data: proyectos, error } = await supabase
+    .from('proyectos')
+    .select('*, perfiles:alumno_id(nombre, apellido, email, rol, turno)')
+    .order('created_at', { ascending: false });
+
+  if (error || !proyectos) {
+    console.error('Error al sincronizar proyectos de Supabase:', error);
+    return;
+  }
+
+  const locales = getProyectos();
+  for (const p of proyectos) {
+    const yaExiste = locales.find((l) => l.id === p.id);
+    if (!yaExiste) {
+      saveProyecto({
+        id: p.id,
+        nombre: p.titulo,
+        descripcion: p.descripcion || '',
+        boardImg: p.board_url,
+        categorias: ['Film'],
+        cursoId: 'curso-01',
+        integrantes: [p.alumno_id],
+        youtubeUrl: p.video_url || undefined,
+        imagenes: [],
+        pdf: p.pdf_url ? { nombre: 'caso.pdf', data: p.pdf_url } : undefined,
+      });
+    }
+  }
 }

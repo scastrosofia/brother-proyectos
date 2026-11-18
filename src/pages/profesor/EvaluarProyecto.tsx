@@ -39,7 +39,7 @@ export const EvaluarProyecto: React.FC = () => {
   const panelRef = useRef<HTMLDivElement>(null);
   const proyecto = id ? getProyectoById(id) : undefined;
   const criterios = getCriterios();
-  const esProfesor = usuario.rol === 'profesor';
+  const esProfesor = usuario.rol === 'profesor' || usuario.rol === 'admin';
 
   const evaluacionPropia =
     proyecto && esProfesor

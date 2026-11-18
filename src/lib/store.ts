@@ -444,7 +444,7 @@ export function saveProyecto(input: SaveProyectoInput): Proyecto {
     ...input,
     categoria: categoriaPrincipal,
     categorias: categoriasLimpias,
-    id: generateId('proj'),
+    id: input.id ?? generateId('proj'),
     creadoEn: now,
     actualizadoEn: now,
   };

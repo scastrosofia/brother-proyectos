@@ -250,9 +250,10 @@ export const ProyectoForm: React.FC = () => {
       }
 
       // 3. Si está autenticado, persistir también en la tabla proyectos de Supabase
+      let supabaseProyectoId = existing?.id;
       if (authUser) {
         setSubidaProgreso('Guardando proyecto en la base de datos...');
-        await guardarProyectoSupabase({
+        const guardadoEnDb = await guardarProyectoSupabase({
           id: existing?.id,
           alumnoId: authUser.id,
           titulo: nombre.trim(),
@@ -262,11 +263,14 @@ export const ProyectoForm: React.FC = () => {
           videoUrl: youtubeUrl.trim() || undefined,
           categorias,
         });
+        if (guardadoEnDb?.id) {
+          supabaseProyectoId = guardadoEnDb.id;
+        }
       }
 
-      // 4. Guardar en el store local para mantener consistencia con las vistas existentes
+      // 4. Guardar en el store local usando el MISMO UUID de Supabase
       const guardado = saveProyecto({
-        id: existing?.id,
+        id: supabaseProyectoId,
         nombre: nombre.trim(),
         categorias,
         boardImg: boardUrlFinal,
