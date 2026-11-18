@@ -11,6 +11,7 @@ import { AdminFestivales } from './pages/admin/AdminFestivales';
 import { AdminFestivalForm } from './pages/admin/AdminFestivalForm';
 import { AdminInscripciones } from './pages/admin/AdminInscripciones';
 import { AdminProfesores } from './pages/admin/AdminProfesores';
+import { AdminUsuariosPendientes } from './pages/admin/AdminUsuariosPendientes';
 import { MisInscripciones } from './pages/alumno/MisInscripciones';
 import { MisProyectos } from './pages/alumno/MisProyectos';
 import { ProyectoDetalle } from './pages/alumno/ProyectoDetalle';
@@ -53,6 +54,7 @@ export const App: React.FC = () => {
           <Route path="/festival/:id" element={<FestivalDetalle />} />
 
           {/* Admin */}
+          <Route path="/admin/solicitudes" element={<AdminUsuariosPendientes />} />
           <Route path="/admin/festivales" element={<AdminFestivales />} />
           <Route
             path="/admin/festivales/nuevo"

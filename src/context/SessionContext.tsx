@@ -1,4 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+﻿import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
+import type { PerfilUsuario } from '../lib/auth';
+import {
+  getPerfil,
+  sincronizarPerfilGoogle,
+  signInWithGoogle,
+  signOutSupabase,
+} from '../lib/auth';
 import {
   getUsuarioActivo,
   getUsuarios,
@@ -9,6 +18,8 @@ import {
   subscribeStore,
 } from '../lib/store';
 import type { Rol, Usuario } from '../types/models';
+import { OnboardingModal } from '../components/auth/OnboardingModal';
+import { CuentaPendienteScreen } from '../components/auth/CuentaPendienteScreen';
 
 export function getHomeRouteForRol(rol: Rol): string {
   switch (rol) {
@@ -17,7 +28,7 @@ export function getHomeRouteForRol(rol: Rol): string {
     case 'profesor':
       return '/proyectos';
     case 'admin':
-      return '/admin/festivales';
+      return '/admin/dashboard';
   }
 }
 
@@ -30,6 +41,14 @@ interface SessionContextValue {
   cambiarRol: (nuevoRol: Rol) => Usuario;
   cambiarUsuario: (usuarioId: string) => Usuario;
   reiniciarDemo: () => Usuario;
+
+  // Supabase Auth Real
+  authUser: User | null;
+  perfilReal: PerfilUsuario | null;
+  cargandoAuth: boolean;
+  iniciarSesionGoogle: () => Promise<void>;
+  cerrarSesionGoogle: () => Promise<void>;
+  recargarPerfil: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -39,11 +58,49 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [storeTick, setStoreTick] = useState(0);
   const [usuario, setUsuario] = useState<Usuario>(() => getUsuarioActivo());
-  const [quotaErrorMessage, setQuotaErrorMessage] = useState<string | null>(
-    null
-  );
+  const [quotaErrorMessage, setQuotaErrorMessage] = useState<string | null>(null);
+
+  // Estados de Supabase Auth
+  const [authUser, setAuthUser] = useState<User | null>(null);
+  const [perfilReal, setPerfilReal] = useState<PerfilUsuario | null>(null);
+  const [cargandoAuth, setCargandoAuth] = useState(true);
+
+  // Función para sincronizar sesión de Supabase
+  const procesarSesion = async (user: User | null) => {
+    setAuthUser(user);
+    if (!user) {
+      setPerfilReal(null);
+      setCargandoAuth(false);
+      return;
+    }
+
+    try {
+      const perfil = await sincronizarPerfilGoogle(user);
+      setPerfilReal(perfil);
+
+      // Si el perfil está aprobado, adaptamos el usuario activo al rol real
+      if (perfil.aprobado) {
+        const rolMapeado: Rol = perfil.rol.toLowerCase() as Rol;
+        const candidatos = getUsuariosByRol(rolMapeado);
+        if (candidatos.length > 0) {
+          const u = setUsuarioActivo(candidatos[0].id);
+          setUsuario({
+            ...u,
+            nombre: perfil.nombre || u.nombre,
+            apellido: perfil.apellido || u.apellido,
+            email: perfil.email || u.email,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error al sincronizar perfil:', err);
+    } finally {
+      setCargandoAuth(false);
+    }
+  };
 
   useEffect(() => {
+    // 1. Escuchar cambios en store local
     const unsubStore = subscribeStore(() => {
       setUsuario(getUsuarioActivo());
       setStoreTick((t) => t + 1);
@@ -51,9 +108,23 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     const unsubQuota = subscribeQuotaError((msg) => {
       setQuotaErrorMessage(msg);
     });
+
+    // 2. Verificar sesión activa de Supabase
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      procesarSesion(session?.user ?? null);
+    });
+
+    // 3. Suscribirse a eventos de login/logout
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      procesarSesion(session?.user ?? null);
+    });
+
     return () => {
       unsubStore();
       unsubQuota();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -79,6 +150,30 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     return inicial;
   };
 
+  const iniciarSesionGoogle = async () => {
+    await signInWithGoogle();
+  };
+
+  const cerrarSesionGoogle = async () => {
+    await signOutSupabase();
+    setAuthUser(null);
+    setPerfilReal(null);
+  };
+
+  const recargarPerfil = async () => {
+    if (authUser) {
+      const p = await getPerfil(authUser.id);
+      if (p) setPerfilReal(p);
+    }
+  };
+
+  // Determinar si debemos mostrar modal de onboarding o bloqueo por cuenta pendiente
+  const necesitaOnboarding =
+    authUser && perfilReal && !perfilReal.aprobado && perfilReal.rol !== 'ADMIN' && !perfilReal.telefono;
+
+  const estaPendiente =
+    authUser && perfilReal && !perfilReal.aprobado && perfilReal.rol !== 'ADMIN' && Boolean(perfilReal.telefono);
+
   return (
     <SessionContext.Provider
       value={{
@@ -90,9 +185,31 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         cambiarRol,
         cambiarUsuario,
         reiniciarDemo,
+        authUser,
+        perfilReal,
+        cargandoAuth,
+        iniciarSesionGoogle,
+        cerrarSesionGoogle,
+        recargarPerfil,
       }}
     >
-      {children}
+      {necesitaOnboarding && perfilReal && (
+        <OnboardingModal
+          perfil={perfilReal}
+          onCompletado={(actualizado) => setPerfilReal(actualizado)}
+          onCerrarSesion={cerrarSesionGoogle}
+        />
+      )}
+
+      {estaPendiente && perfilReal ? (
+        <CuentaPendienteScreen
+          perfil={perfilReal}
+          onRecargarPerfil={recargarPerfil}
+          onCerrarSesion={cerrarSesionGoogle}
+        />
+      ) : (
+        children
+      )}
     </SessionContext.Provider>
   );
 };
