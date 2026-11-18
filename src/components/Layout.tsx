@@ -248,6 +248,15 @@ export const Layout: React.FC<{
                   {perfilReal?.rol || usuario.rol}
                 </div>
               </div>
+              <button
+                type="button"
+                className="btn btn--subtle"
+                onClick={cerrarSesionGoogle}
+                style={{ fontSize: '0.75rem', padding: '4px 8px', color: '#ff6677' }}
+                title="Cerrar sesión de Google"
+              >
+                Salir
+              </button>
             </div>
           )}
 
