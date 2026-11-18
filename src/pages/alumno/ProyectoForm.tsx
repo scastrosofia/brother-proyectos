@@ -21,6 +21,11 @@ import {
   getProyectoCategorias,
   type Categoria,
 } from '../../types/models';
+import {
+  subirBoardStorage,
+  subirDocumentoStorage,
+  guardarProyectoSupabase,
+} from '../../lib/proyectosService';
 
 const MAX_DESCRIPCION = 600;
 
@@ -28,7 +33,7 @@ export const ProyectoForm: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { usuario } = useSession();
+  const { usuario, authUser } = useSession();
 
   const cursos = getCursos();
   const alumnos = getUsuariosByRol('alumno');
@@ -56,6 +61,8 @@ export const ProyectoForm: React.FC = () => {
 
   const [dragActive, setDragActive] = useState(false);
   const [procesandoMedia, setProcesandoMedia] = useState(false);
+  const [guardandoEnNube, setGuardandoEnNube] = useState(false);
+  const [subidaProgreso, setSubidaProgreso] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [mediaNotice, setMediaNotice] = useState<string | null>(null);
 
@@ -220,31 +227,67 @@ export const ProyectoForm: React.FC = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMediaNotice(null);
     if (!validar()) return;
 
+    setGuardandoEnNube(true);
+    let boardUrlFinal = boardImg;
+    let pdfUrlFinal = pdf?.data;
+
     try {
+      // 1. Si está logueado en Supabase y el board es base64, subir a Supabase Storage
+      if (authUser && boardImg.startsWith('data:image/')) {
+        setSubidaProgreso('Subiendo board 1920×1080 a la nube...');
+        boardUrlFinal = await subirBoardStorage(boardImg, nombre.trim());
+      }
+
+      // 2. Si hay PDF en base64, subir al bucket documentos de Supabase
+      if (authUser && pdf?.data?.startsWith('data:application/pdf')) {
+        setSubidaProgreso('Subiendo PDF a la nube...');
+        pdfUrlFinal = await subirDocumentoStorage(pdf.data, nombre.trim());
+      }
+
+      // 3. Si está autenticado, persistir también en la tabla proyectos de Supabase
+      if (authUser) {
+        setSubidaProgreso('Guardando proyecto en la base de datos...');
+        await guardarProyectoSupabase({
+          id: existing?.id,
+          alumnoId: authUser.id,
+          titulo: nombre.trim(),
+          descripcion: descripcion.trim(),
+          boardUrl: boardUrlFinal,
+          pdfUrl: pdfUrlFinal,
+          videoUrl: youtubeUrl.trim() || undefined,
+          categorias,
+        });
+      }
+
+      // 4. Guardar en el store local para mantener consistencia con las vistas existentes
       const guardado = saveProyecto({
         id: existing?.id,
         nombre: nombre.trim(),
         categorias,
-        boardImg,
+        boardImg: boardUrlFinal,
         youtubeUrl: youtubeUrl.trim() || undefined,
         imagenes,
-        pdf,
+        pdf: pdf ? { nombre: pdf.nombre, data: pdfUrlFinal || pdf.data } : undefined,
         cursoId,
         integrantes,
         descripcion: descripcion.trim(),
       });
       navigate(`/proyecto/${guardado.id}`);
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Error al guardar:', err);
       if (err instanceof StorageQuotaError) {
         setMediaNotice(err.message);
       } else {
-        setMediaNotice('Ocurrió un error al guardar el proyecto.');
+        setMediaNotice(err?.message || 'Ocurrió un error al guardar el proyecto.');
       }
+    } finally {
+      setGuardandoEnNube(false);
+      setSubidaProgreso(null);
     }
   };
 
@@ -789,9 +832,14 @@ export const ProyectoForm: React.FC = () => {
               <button
                 type="submit"
                 className="btn btn--primary"
-                disabled={procesandoMedia}
+                disabled={procesandoMedia || guardandoEnNube}
+                style={{ minWidth: 160 }}
               >
-                {isEdit ? 'Guardar cambios' : 'Guardar proyecto'}
+                {guardandoEnNube
+                  ? subidaProgreso || 'Guardando en la nube...'
+                  : isEdit
+                  ? 'Guardar cambios'
+                  : 'Guardar proyecto'}
               </button>
             </div>
           </div>
