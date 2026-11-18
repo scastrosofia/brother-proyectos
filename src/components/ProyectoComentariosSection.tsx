@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from '../context/SessionContext';
 import { formatFecha } from '../lib/assets';
 import {
@@ -14,21 +14,49 @@ import {
   toggleComentarioLeido,
   toggleComentarioSolucionado,
 } from '../lib/store';
-import type { Proyecto } from '../types/models';
+import {
+  guardarComentarioSupabase,
+  toggleComentarioResueltoSupabase,
+  toggleComentarioLeidoSupabase,
+  getProfesoresAprobadosSupabase,
+} from '../lib/proyectosService';
+import type { Proyecto, Usuario } from '../types/models';
 
 type EstadoFiltro = 'todos' | 'sin_leer' | 'pendientes' | 'solucionados';
 
 export const ProyectoComentariosSection: React.FC<{
   proyecto: Proyecto;
 }> = ({ proyecto }) => {
-  const { usuario } = useSession();
+  const { usuario, authUser } = useSession();
 
   const esAlumno = usuario.rol === 'alumno';
   const esIntegrante = esAlumno && proyecto.integrantes.includes(usuario.id);
-  const esProfesor = usuario.rol === 'profesor';
+  const esProfesor = usuario.rol === 'profesor' || usuario.rol === 'admin';
   const esAdmin = usuario.rol === 'admin';
 
-  const profesores = getUsuariosByRol('profesor');
+  const [profesoresSupabase, setProfesoresSupabase] = useState<Usuario[]>([]);
+
+  useEffect(() => {
+    getProfesoresAprobadosSupabase().then((profs) => {
+      if (profs && profs.length > 0) {
+        const mapeados: Usuario[] = profs.map((p) => ({
+          id: p.id,
+          nombre: p.nombre,
+          apellido: p.apellido,
+          email: p.email,
+          rol: 'profesor',
+        }));
+        setProfesoresSupabase(mapeados);
+      }
+    });
+  }, []);
+
+  const profesoresLocales = getUsuariosByRol('profesor');
+  const profesores = useMemo(() => {
+    const ids = new Set(profesoresSupabase.map((p) => p.id));
+    return [...profesoresSupabase, ...profesoresLocales.filter((p) => !ids.has(p.id))];
+  }, [profesoresSupabase, profesoresLocales]);
+
   const comentariosVisibles = getComentariosProyecto(proyecto.id, usuario);
   const tagsVisibles = getTagsProyecto(proyecto.id, usuario);
 
@@ -73,13 +101,22 @@ export const ProyectoComentariosSection: React.FC<{
     return map;
   }, [comentariosVisibles]);
 
-  const handlePublicarComentario = (e: React.FormEvent) => {
+  const handlePublicarComentario = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!esProfesor) return;
     if (!nuevoTexto.trim()) {
       setComentarioError('Escribí un comentario antes de publicarlo.');
       return;
     }
+
+    if (authUser) {
+      await guardarComentarioSupabase({
+        proyectoId: proyecto.id,
+        autorId: authUser.id,
+        mensaje: nuevoTexto.trim(),
+      });
+    }
+
     addComentarioProyecto({
       proyectoId: proyecto.id,
       profesorId: usuario.id,
@@ -88,14 +125,25 @@ export const ProyectoComentariosSection: React.FC<{
     setNuevoTexto('');
     setComentarioError(null);
     setFeedbackBanner(
-      'Comentario publicado. Los alumnos del equipo ya recibieron la notificación en su dashboard.'
+      'Comentario publicado y guardado en la base de datos.'
     );
   };
 
-  const handleTaggearProfesor = (e: React.FormEvent) => {
+  const handleTaggearProfesor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!esIntegrante || !profesorTagId) return;
-    const prof = getUsuarioById(profesorTagId);
+    const prof =
+      profesores.find((p) => p.id === profesorTagId) || getUsuarioById(profesorTagId);
+
+    if (authUser) {
+      await guardarComentarioSupabase({
+        proyectoId: proyecto.id,
+        autorId: authUser.id,
+        profesorTaggeadoId: profesorTagId,
+        mensaje: notaTag.trim() || 'Te taggeó para que revises este proyecto.',
+      });
+    }
+
     taggearProfesorEnProyecto({
       proyectoId: proyecto.id,
       alumnoId: usuario.id,
@@ -105,7 +153,7 @@ export const ProyectoComentariosSection: React.FC<{
     setNotaTag('');
     setFeedbackBanner(
       prof
-        ? `Taggeaste a ${prof.nombre} ${prof.apellido}. Ya le aparece el aviso en su dashboard.`
+        ? `Taggeaste a ${prof.nombre} ${prof.apellido}. Ya se registró en la base de datos y le aparece en su dashboard.`
         : 'Profesor taggeado correctamente.'
     );
   };
@@ -487,7 +535,12 @@ export const ProyectoComentariosSection: React.FC<{
                         type="button"
                         className="btn"
                         style={{ minHeight: 32, padding: '0 12px', fontSize: 12.5 }}
-                        onClick={() => toggleComentarioLeido(com.id)}
+                        onClick={() => {
+                          if (authUser) {
+                            toggleComentarioLeidoSupabase(com.id, !com.leido);
+                          }
+                          toggleComentarioLeido(com.id);
+                        }}
                       >
                         {com.leido
                           ? 'Marcar como no leído'
@@ -513,9 +566,12 @@ export const ProyectoComentariosSection: React.FC<{
                             ? 'var(--text-main)'
                             : 'var(--accent-green)',
                         }}
-                        onClick={() =>
-                          toggleComentarioSolucionado(com.id, usuario.id)
-                        }
+                        onClick={() => {
+                          if (authUser) {
+                            toggleComentarioResueltoSupabase(com.id, !com.solucionado);
+                          }
+                          toggleComentarioSolucionado(com.id, usuario.id);
+                        }}
                       >
                         {com.solucionado
                           ? 'Reabrir como pendiente'

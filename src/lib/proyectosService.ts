@@ -280,3 +280,117 @@ export async function sincronizarProyectosDesdeSupabase() {
     }
   }
 }
+
+/**
+ * Guarda un comentario o tag de profesor en la tabla comentarios de Supabase
+ */
+export async function guardarComentarioSupabase(params: {
+  id?: string;
+  proyectoId: string;
+  autorId: string;
+  profesorTaggeadoId?: string | null;
+  mensaje: string;
+}) {
+  const { id, proyectoId, autorId, profesorTaggeadoId, mensaje } = params;
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(proyectoId);
+  if (!esUuid) return null;
+
+  const payload: any = {
+    proyecto_id: proyectoId,
+    autor_id: autorId,
+    mensaje,
+    profesor_taggeado_id: profesorTaggeadoId || null,
+    resuelto: false,
+    leido: false,
+  };
+  if (id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    payload.id = id;
+  }
+
+  const { data, error } = await supabase
+    .from('comentarios')
+    .upsert(payload)
+    .select('*, perfiles:autor_id(nombre, apellido, email, rol)')
+    .single();
+
+  if (error) {
+    console.error('Error al guardar comentario en Supabase:', error);
+    return null;
+  }
+  return data;
+}
+
+/**
+ * Actualiza el estado resuelto de un comentario en Supabase
+ */
+export async function toggleComentarioResueltoSupabase(comentarioId: string, resuelto: boolean) {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(comentarioId);
+  if (!esUuid) return true;
+
+  const { error } = await supabase
+    .from('comentarios')
+    .update({ resuelto })
+    .eq('id', comentarioId);
+
+  if (error) {
+    console.error('Error al actualizar estado resuelto en Supabase:', error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Actualiza el estado leído de un comentario en Supabase
+ */
+export async function toggleComentarioLeidoSupabase(comentarioId: string, leido: boolean) {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(comentarioId);
+  if (!esUuid) return true;
+
+  const { error } = await supabase
+    .from('comentarios')
+    .update({ leido })
+    .eq('id', comentarioId);
+
+  if (error) {
+    console.error('Error al marcar leído en Supabase:', error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Obtiene los comentarios de un proyecto desde Supabase
+ */
+export async function getComentariosProyectoSupabase(proyectoId: string) {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(proyectoId);
+  if (!esUuid) return [];
+
+  const { data, error } = await supabase
+    .from('comentarios')
+    .select('*, perfiles:autor_id(nombre, apellido, email, rol), profesor:profesor_taggeado_id(nombre, apellido, email)')
+    .eq('proyecto_id', proyectoId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error al obtener comentarios de Supabase:', error);
+    return [];
+  }
+  return data || [];
+}
+
+/**
+ * Obtiene los profesores aprobados en Supabase
+ */
+export async function getProfesoresAprobadosSupabase() {
+  const { data, error } = await supabase
+    .from('perfiles')
+    .select('*')
+    .eq('rol', 'PROFESOR')
+    .eq('aprobado', true);
+
+  if (error) {
+    console.error('Error al consultar profesores en Supabase:', error);
+    return [];
+  }
+  return data || [];
+}
