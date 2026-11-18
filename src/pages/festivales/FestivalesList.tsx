@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { useSession } from '../../context/SessionContext';
 import { formatFecha, resolveAssetUrl } from '../../lib/assets';
 import { getFestivales, getInscripciones } from '../../lib/store';
+import { sincronizarFestivalesDesdeSupabase } from '../../lib/festivalesService';
 
 export const FestivalesList: React.FC = () => {
   const { usuario } = useSession();
   const [filtroEstado, setFiltroEstado] = useState<'abierto' | 'cerrado'>(
     'abierto'
   );
+
+  useEffect(() => {
+    sincronizarFestivalesDesdeSupabase();
+  }, []);
 
   // Orden por deadline más cercano primero (getFestivales ya ordena asc por deadline)
   const todos = getFestivales().filter((f) => f.estado === filtroEstado);

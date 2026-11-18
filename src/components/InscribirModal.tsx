@@ -6,8 +6,8 @@ import {
   getFestivales,
   getInscripciones,
   getProyectosByAlumno,
-  inscribirProyectoEnFestival,
 } from '../lib/store';
+import { inscribirProyectoSupabase } from '../lib/festivalesService';
 import { getProyectoCategorias } from '../types/models';
 
 interface InscribirModalProps {
@@ -112,7 +112,7 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
     setErrorMsg(null);
   };
 
-  const handleConfirm = (e: React.FormEvent) => {
+  const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!festivalActual) {
       setErrorMsg('Elegí un festival abierto.');
@@ -131,7 +131,7 @@ export const InscribirModal: React.FC<InscribirModalProps> = ({
       return;
     }
 
-    inscribirProyectoEnFestival({
+    await inscribirProyectoSupabase({
       proyectoId: proyectoActual.id,
       festivalId: festivalActual.id,
       categoriaIds: selectedCategorias,

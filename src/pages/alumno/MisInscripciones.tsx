@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { useSession } from '../../context/SessionContext';
 import { formatFecha, resolveAssetUrl } from '../../lib/assets';
 import {
-  deleteInscripcion,
   getFestivalById,
   getInscripciones,
   getProyectoById,
 } from '../../lib/store';
 import { getProyectoCategorias } from '../../types/models';
+import {
+  sincronizarInscripcionesSupabase,
+  eliminarInscripcionSupabase,
+} from '../../lib/festivalesService';
 
 export const MisInscripciones: React.FC = () => {
   const { usuario } = useSession();
   const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (usuario?.id) {
+      sincronizarInscripcionesSupabase(usuario.id);
+    }
+  }, [usuario?.id]);
 
   const inscripciones = getInscripciones({ alumnoId: usuario.id });
 
@@ -151,8 +160,8 @@ export const MisInscripciones: React.FC = () => {
                         <button
                           type="button"
                           className="btn btn--danger-outline"
-                          onClick={() => {
-                            deleteInscripcion(insc.id);
+                          onClick={async () => {
+                            await eliminarInscripcionSupabase(insc.id);
                             setFlash(
                               `Se retiró "${proj.nombre}" de ${fest.nombre}.`
                             );
