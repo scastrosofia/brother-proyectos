@@ -16,6 +16,7 @@ import {
   setUsuarioActivo,
   subscribeQuotaError,
   subscribeStore,
+  upsertUsuarioReal,
 } from '../lib/store';
 import type { Rol, Usuario } from '../types/models';
 import { OnboardingModal } from '../components/auth/OnboardingModal';
@@ -78,19 +79,21 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       const perfil = await sincronizarPerfilGoogle(user);
       setPerfilReal(perfil);
 
-      // Si el perfil está aprobado, adaptamos el usuario activo al rol real
+      // Si el perfil está aprobado, adaptamos el usuario activo al rol real con sus datos reales
       if (perfil.aprobado) {
         const rolMapeado: Rol = perfil.rol.toLowerCase() as Rol;
-        const candidatos = getUsuariosByRol(rolMapeado);
-        if (candidatos.length > 0) {
-          const u = setUsuarioActivo(candidatos[0].id);
-          setUsuario({
-            ...u,
-            nombre: perfil.nombre || u.nombre,
-            apellido: perfil.apellido || u.apellido,
-            email: perfil.email || u.email,
-          });
-        }
+        const nombreReal = perfil.nombre || user.user_metadata?.full_name?.split(' ')[0] || 'Usuario';
+        const apellidoReal = perfil.apellido || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '';
+        const emailReal = perfil.email || user.email || '';
+
+        const u = upsertUsuarioReal({
+          id: user.id,
+          nombre: nombreReal,
+          apellido: apellidoReal,
+          email: emailReal,
+          rol: rolMapeado,
+        });
+        setUsuario(u);
       }
     } catch (err) {
       console.error('Error al sincronizar perfil:', err);

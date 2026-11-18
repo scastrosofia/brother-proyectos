@@ -460,14 +460,17 @@ export const ProyectoComentariosSection: React.FC<{
       ) : (
         <div className="comment-list">
           {comentariosFiltrados.map((com) => {
-            const prof = getUsuarioById(com.profesorId);
+            const prof =
+              (com.profesorId === usuario.id ? usuario : null) ||
+              profesores.find((p) => p.id === com.profesorId) ||
+              getUsuarioById(com.profesorId);
             const profNombre = prof
-              ? `${prof.nombre} ${prof.apellido}`
+              ? `${prof.nombre} ${prof.apellido}`.trim()
               : 'Profesor';
             const initials = prof
-              ? `${prof.nombre.charAt(0)}${prof.apellido.charAt(0)}`.toUpperCase()
+              ? `${prof.nombre?.charAt(0) || ''}${prof.apellido?.charAt(0) || ''}`.toUpperCase() || 'PR'
               : 'PR';
-            const esMio = esProfesor && com.profesorId === usuario.id;
+            const esMio = esProfesor && (com.profesorId === usuario.id || (prof && prof.id === usuario.id));
             const puedeTogglearSolucionado =
               esIntegrante || esMio || esAdmin;
 

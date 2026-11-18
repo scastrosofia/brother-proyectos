@@ -227,6 +227,61 @@ export function setUsuarioActivo(usuarioId: string): Usuario {
   return updatedUser;
 }
 
+export function upsertUsuarioReal(input: {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  rol: Rol;
+}): Usuario {
+  const data = readStore();
+  const idx = data.usuarios.findIndex(
+    (u) => u.id === input.id || (u.email && u.email.toLowerCase() === input.email.toLowerCase())
+  );
+  const now = todayISO();
+
+  // Si veníamos usando la cuenta demo (prof-01) y ahora entra un usuario real,
+  // reasignamos comentarios y evaluaciones previas de prueba a su ID real
+  if (input.rol === 'profesor' || input.rol === 'admin') {
+    data.comentarios = data.comentarios.map((c) =>
+      c.profesorId === 'prof-01' ? { ...c, profesorId: input.id } : c
+    );
+    data.evaluaciones = data.evaluaciones.map((e) =>
+      e.profesorId === 'prof-01' ? { ...e, profesorId: input.id } : e
+    );
+  }
+
+  if (idx >= 0) {
+    const updated: Usuario = {
+      ...data.usuarios[idx],
+      id: input.id,
+      nombre: input.nombre.trim(),
+      apellido: input.apellido.trim(),
+      email: input.email.trim().toLowerCase(),
+      rol: input.rol,
+      ultimaConexion: now,
+    };
+    data.usuarios[idx] = updated;
+    data.usuarioActivoId = updated.id;
+    writeStore(data);
+    return updated;
+  }
+
+  const nuevo: Usuario = {
+    id: input.id,
+    nombre: input.nombre.trim(),
+    apellido: input.apellido.trim(),
+    email: input.email.trim().toLowerCase(),
+    rol: input.rol,
+    ultimaConexion: now,
+    proyectosVistos: [],
+  };
+  data.usuarios.push(nuevo);
+  data.usuarioActivoId = nuevo.id;
+  writeStore(data);
+  return nuevo;
+}
+
 export function addProfesor(input: {
   nombre: string;
   apellido: string;
