@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import type { PerfilUsuario } from '../../lib/auth';
 import { getUsuariosPendientes, aprobarUsuario, rechazarUsuario } from '../../lib/auth';
+import { notificarAprobacionUsuario } from '../../lib/emailService';
 
 export const AdminUsuariosPendientes: React.FC = () => {
   const [solicitudes, setSolicitudes] = useState<PerfilUsuario[]>([]);
@@ -23,6 +24,13 @@ export const AdminUsuariosPendientes: React.FC = () => {
     setProcesandoId(usuario.id);
     const ok = await aprobarUsuario(usuario.id, usuario.rol, usuario.turno || undefined);
     if (ok) {
+      notificarAprobacionUsuario({
+        email: usuario.email,
+        nombre: usuario.nombre || 'Usuario',
+        rol: usuario.rol,
+        turno: usuario.turno || undefined,
+      }).catch(console.error);
+
       setMensajeExito(`¡Cuenta de ${usuario.nombre} ${usuario.apellido} aprobada como ${usuario.rol}!`);
       setSolicitudes((prev) => prev.filter((u) => u.id !== usuario.id));
       setTimeout(() => setMensajeExito(null), 4000);

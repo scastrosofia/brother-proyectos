@@ -20,6 +20,10 @@ import {
   toggleComentarioLeidoSupabase,
   getProfesoresAprobadosSupabase,
 } from '../lib/proyectosService';
+import {
+  notificarComentarioProfesor,
+  notificarTagProfesor,
+} from '../lib/emailService';
 import type { Proyecto, Usuario } from '../types/models';
 
 type EstadoFiltro = 'todos' | 'sin_leer' | 'pendientes' | 'solucionados';
@@ -122,6 +126,21 @@ export const ProyectoComentariosSection: React.FC<{
       profesorId: usuario.id,
       texto: nuevoTexto,
     });
+
+    // Enviar notificación por email a los alumnos del proyecto
+    const emailsAlumnos = proyecto.integrantes
+      .map((id) => getUsuarioById(id)?.email)
+      .filter(Boolean) as string[];
+    if (emailsAlumnos.length > 0) {
+      notificarComentarioProfesor({
+        emailsDestino: emailsAlumnos,
+        nombreProfesor: `${usuario.nombre} ${usuario.apellido}`.trim(),
+        nombreProyecto: proyecto.nombre,
+        comentario: nuevoTexto.trim(),
+        proyectoId: proyecto.id,
+      }).catch(console.error);
+    }
+
     setNuevoTexto('');
     setComentarioError(null);
     setFeedbackBanner(
@@ -150,6 +169,27 @@ export const ProyectoComentariosSection: React.FC<{
       profesorId: profesorTagId,
       nota: notaTag,
     });
+
+    // Enviar notificación por email al profesor taggeado
+    if (prof?.email) {
+      const nombresAlumnos = proyecto.integrantes
+        .map((id) => {
+          const u = getUsuarioById(id);
+          return u ? `${u.nombre} ${u.apellido}`.trim() : '';
+        })
+        .filter(Boolean)
+        .join(', ') || usuario.nombre;
+
+      notificarTagProfesor({
+        emailProfesor: prof.email,
+        nombreProfesor: `${prof.nombre} ${prof.apellido}`.trim(),
+        nombresAlumnos,
+        nombreProyecto: proyecto.nombre,
+        nota: notaTag.trim() || undefined,
+        proyectoId: proyecto.id,
+      }).catch(console.error);
+    }
+
     setNotaTag('');
     setFeedbackBanner(
       prof
