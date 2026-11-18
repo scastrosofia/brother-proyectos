@@ -138,3 +138,110 @@ export async function getProyectosDesdeSupabase() {
   }
   return data || [];
 }
+
+/**
+ * Guarda o actualiza la evaluación de un profesor en Supabase
+ */
+export async function guardarEvaluacionSupabase(params: {
+  proyectoId: string;
+  profesorId: string;
+  puntajes: Record<string, number>;
+  comentario: string;
+}) {
+  const { proyectoId, profesorId, puntajes, comentario } = params;
+
+  // Si el proyectoId no es UUID (ej. proyecto demo proj-01), omitimos supabase para no romper
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(proyectoId);
+  if (!esUuid) {
+    return true;
+  }
+
+  // Borrar evaluaciones previas de este profesor para este proyecto
+  await supabase
+    .from('evaluaciones')
+    .delete()
+    .eq('proyecto_id', proyectoId)
+    .eq('profesor_id', profesorId);
+
+  // Insertar cada criterio con su puntaje
+  const filas = Object.entries(puntajes).map(([criterio, puntaje]) => ({
+    proyecto_id: proyectoId,
+    profesor_id: profesorId,
+    criterio,
+    puntaje,
+    comentario: comentario || '',
+  }));
+
+  if (filas.length > 0) {
+    const { error } = await supabase.from('evaluaciones').insert(filas);
+    if (error) {
+      console.error('Error al guardar evaluación en Supabase:', error);
+      throw error;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Elimina la evaluación de un profesor en Supabase
+ */
+export async function eliminarEvaluacionSupabase(proyectoId: string, profesorId: string) {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(proyectoId);
+  if (!esUuid) return true;
+
+  const { error } = await supabase
+    .from('evaluaciones')
+    .delete()
+    .eq('proyecto_id', proyectoId)
+    .eq('profesor_id', profesorId);
+
+  if (error) {
+    console.error('Error al eliminar evaluación en Supabase:', error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Consulta las evaluaciones de un proyecto en Supabase
+ */
+export async function getEvaluacionesSupabase(proyectoId: string) {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(proyectoId);
+  if (!esUuid) return [];
+
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .select('*, perfiles:profesor_id(nombre, apellido, email)')
+    .eq('proyecto_id', proyectoId);
+
+  if (error) {
+    console.error('Error al obtener evaluaciones en Supabase:', error);
+    return [];
+  }
+
+  // Agrupar filas por profesor_id
+  const agrupadas: Record<string, {
+    profesorId: string;
+    profesorNombre: string;
+    puntajes: Record<string, number>;
+    comentario: string;
+    fecha: string;
+  }> = {};
+
+  (data || []).forEach((row: any) => {
+    if (!agrupadas[row.profesor_id]) {
+      const p = row.perfiles;
+      agrupadas[row.profesor_id] = {
+        profesorId: row.profesor_id,
+        profesorNombre: p ? `${p.nombre} ${p.apellido}` : 'Profesor',
+        puntajes: {},
+        comentario: row.comentario || '',
+        fecha: row.created_at,
+      };
+    }
+    agrupadas[row.profesor_id].puntajes[row.criterio] = row.puntaje;
+  });
+
+  return Object.values(agrupadas);
+}

@@ -26,11 +26,15 @@ import {
   saveEvaluacion,
 } from '../../lib/store';
 import { getProyectoCategorias } from '../../types/models';
+import {
+  guardarEvaluacionSupabase,
+  eliminarEvaluacionSupabase,
+} from '../../lib/proyectosService';
 
 export const EvaluarProyecto: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { usuario } = useSession();
+  const { usuario, authUser } = useSession();
 
   const panelRef = useRef<HTMLDivElement>(null);
   const proyecto = id ? getProyectoById(id) : undefined;
@@ -153,6 +157,16 @@ export const EvaluarProyecto: React.FC = () => {
     }
 
     const eraEdicion = Boolean(evaluacionPropia);
+
+    if (authUser) {
+      guardarEvaluacionSupabase({
+        proyectoId: proyecto.id,
+        profesorId: authUser.id,
+        puntajes,
+        comentario,
+      }).catch((err) => console.error('Error al guardar evaluación en Supabase:', err));
+    }
+
     saveEvaluacion({
       proyectoId: proyecto.id,
       profesorId: usuario.id,
@@ -162,13 +176,20 @@ export const EvaluarProyecto: React.FC = () => {
     setFormError(null);
     setFlashMsg(
       eraEdicion
-        ? 'Tu evaluación fue actualizada.'
+        ? 'Tu evaluación fue actualizada y guardada en la base de datos.'
         : 'Tu evaluación se guardó y ya impactó en el promedio general.'
     );
   };
 
   const handleDeletePropia = () => {
     if (!evaluacionPropia) return;
+
+    if (authUser) {
+      eliminarEvaluacionSupabase(proyecto.id, authUser.id).catch((err) =>
+        console.error('Error al eliminar evaluación en Supabase:', err)
+      );
+    }
+
     deleteEvaluacion(evaluacionPropia.id);
     setPuntajes({});
     setComentario('');
