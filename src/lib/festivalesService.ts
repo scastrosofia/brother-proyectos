@@ -100,14 +100,14 @@ export async function inscribirProyectoSupabase(params: {
 /**
  * Consulta las inscripciones desde Supabase
  */
-export async function sincronizarInscripcionesSupabase(alumnoId: string): Promise<Inscripcion[]> {
+export async function sincronizarInscripcionesSupabase(alumnoId?: string): Promise<Inscripcion[]> {
   try {
     const { data, error } = await supabase
       .from('inscripciones')
-      .select('*, proyectos!inner(alumno_id)');
+      .select('*, proyectos:proyecto_id(alumno_id, titulo)');
 
     if (error || !data) {
-      return getInscripciones({ alumnoId });
+      return getInscripciones(alumnoId ? { alumnoId } : undefined);
     }
 
     for (const row of data) {
@@ -118,9 +118,9 @@ export async function sincronizarInscripcionesSupabase(alumnoId: string): Promis
       });
     }
 
-    return getInscripciones({ alumnoId });
+    return getInscripciones(alumnoId ? { alumnoId } : undefined);
   } catch (err) {
-    return getInscripciones({ alumnoId });
+    return getInscripciones(alumnoId ? { alumnoId } : undefined);
   }
 }
 
@@ -139,4 +139,48 @@ export async function eliminarInscripcionSupabase(id: string): Promise<boolean> 
   } catch {
     return true;
   }
+}
+
+/**
+ * Guarda o actualiza un festival y sus categorías en Supabase
+ */
+export async function guardarFestivalSupabase(festival: Festival): Promise<Festival> {
+  const esUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(festival.id);
+  const payload: any = {
+    nombre: festival.nombre,
+    descripcion: festival.bajada || festival.brief,
+    web: festival.web,
+    fecha_limite: festival.deadline ? new Date(festival.deadline).toISOString() : new Date().toISOString(),
+    estado: festival.estado,
+    bajada: festival.bajada,
+    brief: festival.brief,
+    reglas: festival.reglas,
+    criterios: festival.criterios,
+    faq: festival.faq,
+  };
+  if (esUuid) {
+    payload.id = festival.id;
+  }
+
+  try {
+    const { data, error } = await supabase.from('festivales').upsert(payload).select().single();
+    if (error) {
+      console.warn('Error al guardar festival en Supabase:', error.message);
+      return festival;
+    }
+    if (data && festival.categorias && festival.categorias.length > 0) {
+      for (const cat of festival.categorias) {
+        const catPayload: any = {
+          festival_id: data.id,
+          nombre: cat.nombre,
+        };
+        const catEsUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cat.id);
+        if (catEsUuid) catPayload.id = cat.id;
+        await supabase.from('categorias').upsert(catPayload);
+      }
+    }
+  } catch (err) {
+    console.error('Error al guardar festival en Supabase:', err);
+  }
+  return festival;
 }

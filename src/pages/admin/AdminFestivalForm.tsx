@@ -14,6 +14,7 @@ import {
   saveFestival,
   StorageQuotaError,
 } from '../../lib/store';
+import { guardarFestivalSupabase } from '../../lib/festivalesService';
 import type { Festival, FestivalCategoria } from '../../types/models';
 
 export const AdminFestivalForm: React.FC = () => {
@@ -149,6 +150,7 @@ export const AdminFestivalForm: React.FC = () => {
       });
 
       setEstado(guardado.estado);
+      guardarFestivalSupabase(guardado);
 
       if (isNew) {
         navigate(`/admin/festivales/${guardado.id}`, { replace: true });

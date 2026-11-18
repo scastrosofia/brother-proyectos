@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { formatFecha } from '../../lib/assets';
@@ -8,6 +8,7 @@ import {
   getInscripciones,
 } from '../../lib/store';
 import type { Festival } from '../../types/models';
+import { sincronizarFestivalesDesdeSupabase } from '../../lib/festivalesService';
 
 const ESTADO_LABELS: Record<Festival['estado'], string> = {
   abierto: 'Abierto',
@@ -18,6 +19,10 @@ const ESTADO_LABELS: Record<Festival['estado'], string> = {
 export const AdminFestivales: React.FC = () => {
   const [aEliminar, setAEliminar] = useState<Festival | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    sincronizarFestivalesDesdeSupabase();
+  }, []);
 
   const festivales = getFestivales();
 

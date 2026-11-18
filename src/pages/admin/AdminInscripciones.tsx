@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { formatFecha } from '../../lib/assets';
@@ -11,9 +11,18 @@ import {
   getProyectoById,
   getUsuarioById,
 } from '../../lib/store';
+import {
+  sincronizarFestivalesDesdeSupabase,
+  sincronizarInscripcionesSupabase,
+} from '../../lib/festivalesService';
 
 export const AdminInscripciones: React.FC = () => {
   const [festivalFiltro, setFestivalFiltro] = useState('');
+
+  useEffect(() => {
+    sincronizarFestivalesDesdeSupabase();
+    sincronizarInscripcionesSupabase();
+  }, []);
   const festivales = getFestivales();
 
   const inscripciones = getInscripciones(
