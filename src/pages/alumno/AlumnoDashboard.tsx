@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { NotificacionesPanel } from '../../components/NotificacionesPanel';
 import { useSession } from '../../context/SessionContext';
@@ -14,6 +14,7 @@ import {
 } from '../../lib/store';
 
 export const AlumnoDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { usuario } = useSession();
 
   const misProyectos = getProyectosByAlumno(usuario.id);
@@ -121,7 +122,11 @@ export const AlumnoDashboard: React.FC = () => {
                     : 'Profesor';
 
                   return (
-                    <tr key={com.id}>
+                    <tr
+                      key={com.id}
+                      style={{ cursor: proy ? 'pointer' : 'default' }}
+                      onClick={() => proy && navigate(`/proyecto/${proy.id}`)}
+                    >
                       <td style={{ fontWeight: 600 }}>
                         {proy ? (
                           <Link to={`/proyecto/${proy.id}`}>{proy.nombre}</Link>

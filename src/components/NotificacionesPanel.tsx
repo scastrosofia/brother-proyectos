@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSession } from '../context/SessionContext';
 import {
   descartarNotificacion,
@@ -38,6 +38,7 @@ export const NotificacionesPanel: React.FC<{
 }> = ({
   emptyMessage = 'No tenés notificaciones pendientes.',
 }) => {
+  const navigate = useNavigate();
   const { usuario } = useSession();
   const notificaciones = getNotificacionesUsuario(usuario.id);
 
@@ -123,7 +124,21 @@ export const NotificacionesPanel: React.FC<{
                 : `/evaluar/${notif.proyectoId}`;
 
             return (
-              <div key={notif.id} className="notif-item">
+              <div
+                key={notif.id}
+                className="notif-item"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(targetPath)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(targetPath);
+                  }
+                }}
+                style={{ cursor: 'pointer' }}
+                title={`Ir a ${proyectoNombre}`}
+              >
                 {renderIcon(notif.tipo)}
 
                 <div>
@@ -131,9 +146,9 @@ export const NotificacionesPanel: React.FC<{
                     {notif.tipo === 'tag_profesor' && (
                       <>
                         <strong>{autorNombre}</strong> te taggeó en el proyecto{' '}
-                        <Link to={targetPath} style={{ fontWeight: 700 }}>
+                        <strong style={{ color: 'var(--accent-yellow)', textDecoration: 'underline' }}>
                           {proyectoNombre}
-                        </Link>{' '}
+                        </strong>{' '}
                         para que lo revises y dejes un comentario.
                         {notif.detalle && (
                           <span className="notif-item__quote">
@@ -147,9 +162,9 @@ export const NotificacionesPanel: React.FC<{
                       <>
                         <strong>{autorNombre}</strong> dejó un comentario en tu
                         proyecto{' '}
-                        <Link to={targetPath} style={{ fontWeight: 700 }}>
+                        <strong style={{ color: 'var(--accent-yellow)', textDecoration: 'underline' }}>
                           {proyectoNombre}
-                        </Link>
+                        </strong>
                         .
                         {notif.detalle && (
                           <span className="notif-item__quote">
@@ -163,9 +178,9 @@ export const NotificacionesPanel: React.FC<{
                       <>
                         <strong>{autorNombre}</strong> marcó como{' '}
                         <strong>solucionado</strong> tu comentario en el proyecto{' '}
-                        <Link to={targetPath} style={{ fontWeight: 700 }}>
+                        <strong style={{ color: 'var(--accent-yellow)', textDecoration: 'underline' }}>
                           {proyectoNombre}
-                        </Link>
+                        </strong>
                         .
                         {notif.detalle && (
                           <span className="notif-item__quote">
@@ -186,7 +201,10 @@ export const NotificacionesPanel: React.FC<{
                   className="notif-item__close"
                   aria-label="Descartar notificación"
                   title="Descartar notificación"
-                  onClick={() => descartarNotificacion(notif.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    descartarNotificacion(notif.id);
+                  }}
                 >
                   ×
                 </button>

@@ -1415,7 +1415,8 @@ p {
   padding: 18px 20px;
   border-bottom: 1px solid #1e1e1e;
   background: var(--bg-card);
-  transition: background-color 0.12s ease;
+  transition: all 0.15s ease;
+  cursor: pointer;
 }
 
 .notif-item:last-child {
@@ -1423,7 +1424,7 @@ p {
 }
 
 .notif-item:hover {
-  background-color: #141414;
+  background-color: #1c1c1c;
 }
 
 .notif-item__icon {
